@@ -301,6 +301,23 @@ def test_api_payee_accounts(
     snapshot(data, json=True)
 
 
+def test_api_suggest_accounts(test_client: FlaskClient) -> None:
+    # Neither payee nor narration is required - e.g. while a new payee is
+    # still being typed and no narration has been entered yet.
+    response = test_client.get("/long-example/api/suggest_accounts")
+    assert_api_success(response, [])
+
+    response = test_client.get(
+        "/long-example/api/suggest_accounts",
+        query_string={
+            "payee": "My Bank",
+            "narration": "monthly banking fee charge",
+        },
+    )
+    data = assert_api_success(response)
+    assert data[0] == "Expenses:Financial:Fees"
+
+
 def test_api_payee_transaction(
     test_client: FlaskClient,
     snapshot: SnapshotFunc,

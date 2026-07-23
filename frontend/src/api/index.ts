@@ -55,7 +55,8 @@ type GetEndpoint =
   | "narration_transaction"
   | "narrations"
   | "query"
-  | "statistics";
+  | "statistics"
+  | "suggest_accounts";
 type PutEndpoint =
   | "add_document"
   | "add_entries"
@@ -297,6 +298,11 @@ export const get_statistics = define_endpoint(
   "statistics",
   statistics_validator,
   filters,
+);
+export const get_suggest_accounts = define_endpoint(
+  "suggest_accounts",
+  array(string),
+  ["payee", "narration"],
 );
 export const get_trial_balance = define_endpoint(
   "trial_balance",

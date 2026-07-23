@@ -311,6 +311,14 @@ def get_payee_accounts(payee: str) -> Sequence[str]:
 
 
 @api_endpoint
+def get_suggest_accounts() -> Sequence[str]:
+    """Suggest accounts based on the text of the payee/narration."""
+    payee = request.args.get("payee", "")
+    narration = request.args.get("narration", "")
+    return g.ledger.suggest.suggest_accounts(f"{payee} {narration}")
+
+
+@api_endpoint
 def get_query(query_string: str) -> QueryResultTable | QueryResultText:
     """Run a Beancount query."""
     return g.ledger.query_shell.execute_query_serialised(

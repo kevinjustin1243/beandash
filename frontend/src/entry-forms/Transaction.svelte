@@ -16,6 +16,7 @@
   import {
     fetch_narrations,
     fetch_payee_accounts,
+    fetch_suggest_accounts,
   } from "./suggestions.svelte.ts";
 
   interface Props {
@@ -128,6 +129,10 @@
   <!-- Using the indexed access (instead of `as posting` in the each) seems to track
          the reactivity differently and avoids cursor jumping on the posting inputs. -->
   {@const posting = entry.postings[index]}
+  {@const text_suggestions =
+    payee || narration
+      ? fetch_suggest_accounts($ledger_mtime, payee, narration).data
+      : undefined}
   {#if posting != null}
     <PostingSvelte
       bind:posting={
@@ -139,7 +144,9 @@
       {index}
       suggestions={$payees.includes(payee)
         ? fetch_payee_accounts($ledger_mtime, payee).data
-        : undefined}
+        : (text_suggestions?.length ?? 0) > 0
+          ? text_suggestions
+          : undefined}
       date={entry.date}
       move={({ from, to }: { from: number; to: number }) => {
         entry = entry.set("postings", move(entry.postings, from, to));
