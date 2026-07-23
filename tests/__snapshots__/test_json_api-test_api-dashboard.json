@@ -285,6 +285,110 @@
         {
           "balance": { "IRAUSD": 7200.0, "USD": 91384.6284, "VACHR": -82 },
           "date": "2016-05-31"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 7200.0,
+            "USD (projected)": 91384.6284,
+            "VACHR (projected)": -82
+          },
+          "date": "2016-05-31"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 11169.88,
+            "USD (projected)": 94273.66,
+            "VACHR (projected)": -63.13
+          },
+          "date": "2016-06-30"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 11377.43,
+            "USD (projected)": 97119.03,
+            "VACHR (projected)": -70.63
+          },
+          "date": "2016-07-30"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 11584.98,
+            "USD (projected)": 99964.4,
+            "VACHR (projected)": -78.14
+          },
+          "date": "2016-08-29"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 11792.53,
+            "USD (projected)": 102809.77,
+            "VACHR (projected)": -85.64
+          },
+          "date": "2016-09-28"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 12000.08,
+            "USD (projected)": 105655.14,
+            "VACHR (projected)": -93.15
+          },
+          "date": "2016-10-28"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 12207.63,
+            "USD (projected)": 108500.51,
+            "VACHR (projected)": -100.65
+          },
+          "date": "2016-11-27"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 12415.18,
+            "USD (projected)": 111345.88,
+            "VACHR (projected)": -108.15
+          },
+          "date": "2016-12-27"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 12622.73,
+            "USD (projected)": 114191.25,
+            "VACHR (projected)": -115.66
+          },
+          "date": "2017-01-26"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 12830.28,
+            "USD (projected)": 117036.62,
+            "VACHR (projected)": -123.16
+          },
+          "date": "2017-02-25"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 13037.83,
+            "USD (projected)": 119881.99,
+            "VACHR (projected)": -130.66
+          },
+          "date": "2017-03-27"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 13245.37,
+            "USD (projected)": 122727.37,
+            "VACHR (projected)": -138.17
+          },
+          "date": "2017-04-26"
+        },
+        {
+          "balance": {
+            "IRAUSD (projected)": 13452.92,
+            "USD (projected)": 125572.74,
+            "VACHR (projected)": -145.67
+          },
+          "date": "2017-05-26"
         }
       ],
       "label": "Net Worth",

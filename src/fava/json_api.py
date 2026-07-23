@@ -36,9 +36,11 @@ from fava.core.documents import is_document_file
 from fava.core.file import GeneratedEntryError
 from fava.core.file import get_entry_slice
 from fava.core.filters import FilterError
+from fava.core.forecast import forecast
 from fava.core.group_entries import group_entries_by_type
 from fava.core.misc import align
 from fava.helpers import FavaAPIError
+from fava.internal_api import BalancesChart
 from fava.internal_api import ChartApi
 from fava.internal_api import get_errors
 from fava.internal_api import get_ledger_data
@@ -688,8 +690,12 @@ def get_dashboard() -> DashboardReport:
     g.ledger.changed()
     options = g.ledger.options
 
+    net_worth_data = g.ledger.charts.net_worth(g.filtered, g.interval, g.conv)
     charts = [
-        ChartApi.net_worth(),
+        BalancesChart(
+            gettext("Net Worth"),
+            [*net_worth_data, *forecast(net_worth_data)],
+        ),
         ChartApi.hierarchy(options["name_assets"]),
     ]
 
