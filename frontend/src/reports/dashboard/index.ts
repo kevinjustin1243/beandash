@@ -1,5 +1,9 @@
-import { get_commodities, get_dashboard } from "../../api/index.ts";
-import type { Commodities } from "../../api/validators.ts";
+import {
+  get_commodities,
+  get_dashboard,
+  get_insights,
+} from "../../api/index.ts";
+import type { Commodities, Insight } from "../../api/validators.ts";
 import type { ParsedFavaChart } from "../../charts/index.ts";
 import { LineChart } from "../../charts/line.ts";
 import { domHelpers } from "../../charts/tooltip.ts";
@@ -12,6 +16,7 @@ import Dashboard from "./Dashboard.svelte";
 export interface DashboardReportProps {
   charts: ParsedFavaChart[];
   date_range: { begin: Date; end: Date } | null;
+  insights: Insight[];
 }
 
 /**
@@ -47,14 +52,16 @@ export const dashboard = new Route<DashboardReportProps>(
   Dashboard,
   async (url) => {
     const filters = getURLFilters(url);
-    const [report, commodities] = await Promise.all([
+    const [report, commodities, insights] = await Promise.all([
       get_dashboard(filters),
       get_commodities(filters),
+      get_insights(filters),
     ]);
     const performance = performance_chart(commodities);
     return {
       charts: performance ? [...report.charts, performance] : report.charts,
       date_range: report.date_range,
+      insights,
     };
   },
   () => _("Dashboard"),

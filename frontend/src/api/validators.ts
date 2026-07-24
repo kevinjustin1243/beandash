@@ -33,6 +33,22 @@ export const error_validator = object<BeancountError>({
   source: optional(object({ filename: string, lineno: number })),
 });
 
+/** A flagged unusual transaction or newly-seen payee. */
+export interface Insight {
+  readonly type: "new_payee" | "unusual_transaction";
+  readonly payee: string;
+  readonly message: string;
+  readonly entry_hash: string;
+}
+
+/** Validator for an Insight. */
+export const insight_validator = object<Insight>({
+  type: constants("new_payee", "unusual_transaction"),
+  payee: string,
+  message: string,
+  entry_hash: string,
+});
+
 /** Validator for the details for a single account. */
 const account_detail = object({
   balance_string: optional(string),

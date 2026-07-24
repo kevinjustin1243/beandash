@@ -16,6 +16,7 @@ import {
   context_validator,
   dashboard_validator,
   error_validator,
+  insight_validator,
   ledgerDataValidator,
   options_validator,
   statistics_validator,
@@ -46,6 +47,7 @@ type GetEndpoint =
   | "errors"
   | "events"
   | "income_statement"
+  | "insights"
   | "journal_page"
   | "trial_balance"
   | "ledger_data"
@@ -252,6 +254,11 @@ export const get_income_statement = define_endpoint(
   "income_statement",
   tree_report_validator,
   filters_conversion_interval,
+);
+export const get_insights = define_endpoint(
+  "insights",
+  array(insight_validator),
+  filters,
 );
 export const get_journal_page = define_endpoint(
   "journal_page",

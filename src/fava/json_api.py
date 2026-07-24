@@ -57,6 +57,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from flask.wrappers import Response
 
     from fava.beans.abc import Directive
+    from fava.core.insights import Insight
     from fava.core.inventory import SimpleCounterInventory
     from fava.core.query import QueryResultTable
     from fava.core.query import QueryResultText
@@ -700,6 +701,13 @@ def get_dashboard() -> DashboardReport:
     ]
 
     return DashboardReport(g.filtered.date_range, charts)
+
+
+@api_endpoint
+def get_insights() -> Sequence[Insight]:
+    """Flag unusual transactions and newly-seen payees currently in view."""
+    g.ledger.changed()
+    return g.ledger.insights.insights(g.filtered.entries)
 
 
 @api_endpoint
