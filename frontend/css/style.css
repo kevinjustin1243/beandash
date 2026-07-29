@@ -1,8 +1,8 @@
 :root {
   /* Fonts */
-  --font-family: "Fira Sans", sans-serif;
-  --font-family-monospaced: "Fira Mono", monospace;
-  --font-family-editor: "Source Code Pro", monospace;
+  --font-family: "IBM Plex Sans", sans-serif;
+  --font-family-monospaced: "IBM Plex Mono", monospace;
+  --font-family-editor: "IBM Plex Mono", monospace;
 
   color-scheme: light dark;
 
@@ -13,31 +13,38 @@
   --z-index-keyboard-overlays: 4;
 
   /* Named colors */
-  --error: hsl(0deg 100% 30%);
-  --warning: hsl(52deg 84% 56%);
+  --error: light-dark(hsl(0deg 100% 30%), #f0705f);
+  --warning: light-dark(hsl(52deg 84% 56%), #f0b45f);
   --red: var(--error);
   --yellow: var(--warning);
-  --green: hsl(151deg 100% 25%);
-  --gray: hsl(0deg 0% 67%);
-  --dark-gray: hsl(0deg 0% 25%);
+  --green: light-dark(hsl(151deg 100% 25%), #5fd6a0);
+  --gray: light-dark(hsl(0deg 0% 67%), #6b7280);
+  --dark-gray: light-dark(hsl(0deg 0% 25%), #cfd4db);
+
+  /* Accent colors (used by the dark theme's dashboard/prediction UI) */
+  --accent-forecast: #9d8cf5;
+  --accent-forecast-hover: #b9adf9;
 
   /* Base colors (backgrounds) */
-  --background: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 15%));
-  --background-darker: light-dark(hsl(0deg 0% 95%), hsl(0deg 0% 20%));
-  --background-darkest: light-dark(hsl(0deg 0% 90%), hsl(0deg 0% 25%));
-  --background-button: light-dark(hsl(0deg 0% 80%), hsl(0deg 0% 35%));
+  --background: light-dark(hsl(0deg 0% 100%), #0a0b0d);
+  --background-darker: light-dark(hsl(0deg 0% 95%), #101317);
+  --background-darkest: light-dark(hsl(0deg 0% 90%), #171b21);
+  --background-button: light-dark(hsl(0deg 0% 80%), #232830);
 
   /* Base colors (borders) */
-  --border-lighter: light-dark(hsl(0deg 0% 90%), hsl(0deg 0% 25%));
-  --border: light-dark(hsl(0deg 0% 85%), hsl(0deg 0% 30%));
-  --border-darker: light-dark(hsl(0deg 0% 80%), hsl(0deg 0% 35%));
+  --border-lighter: light-dark(hsl(0deg 0% 90%), #16191e);
+  --border: light-dark(hsl(0deg 0% 85%), #1c2027);
+  --border-darker: light-dark(hsl(0deg 0% 80%), #2d333c);
 
   /* Base colors (foreground) */
-  --text-color: light-dark(hsl(0deg 0% 25%), hsl(0deg 0% 80%));
-  --text-color-lighter: light-dark(hsl(0deg 0% 30%), hsl(0deg 0% 75%));
-  --text-color-lightest: light-dark(hsl(0deg 0% 40%), hsl(0deg 0% 65%));
-  --link-color: light-dark(hsl(203deg 100% 32%), hsl(203deg 100% 68%));
-  --link-hover-color: var(--text-color-lighter);
+  --text-color: light-dark(hsl(0deg 0% 25%), #e8eaed);
+  --text-color-lighter: light-dark(hsl(0deg 0% 30%), #cfd4db);
+  --text-color-lightest: light-dark(hsl(0deg 0% 40%), #8b929c);
+  --link-color: light-dark(hsl(203deg 100% 32%), var(--accent-forecast));
+  --link-hover-color: light-dark(
+    var(--text-color-lighter),
+    var(--accent-forecast-hover)
+  );
 
   /* Base elements */
   --heading-color: var(--text-color);
@@ -46,13 +53,13 @@
   /* Box shadows */
   --box-shadow-button: 0 0 5px hsl(0deg 0% 50% / 50%);
   --box-shadow-dropdown: 3px 3px 3px
-    light-dark(hsl(0deg 0% 50% / 50%), hsl(0deg 0% 25% / 50%));
+    light-dark(hsl(0deg 0% 50% / 50%), hsl(0deg 0% 0% / 50%));
   --box-shadow-kbd: inset 0 -1px 0 var(--border-darker);
   --box-shadow-overlay: 0 0 20px var(--overlay-wrapper-background);
 
   /* Buttons */
-  --button-color: hsl(0deg 0% 100%);
-  --button-background: hsl(203deg 100% 32%);
+  --button-color: light-dark(hsl(0deg 0% 100%), #06120d);
+  --button-background: light-dark(hsl(151deg 55% 32%), #5fd6a0);
   --button-muted-color: var(--text-color);
   --button-muted-background: var(--background-button);
 
@@ -67,10 +74,13 @@
   --summary-background-darker: var(--background-darkest);
 
   /* Header */
-  --header-color: hsl(0deg 0% 100%);
-  --header-background: light-dark(hsl(203deg 100% 32%), hsl(203deg 100% 25%));
-  --header-placeholder-color: hsl(203deg 47% 66%);
-  --header-placeholder-background: hsl(203deg 56% 45%);
+  --header-color: light-dark(hsl(0deg 0% 100%), var(--text-color));
+  --header-background: light-dark(hsl(203deg 100% 32%), #101317);
+  --header-placeholder-color: light-dark(
+    hsl(203deg 47% 66%),
+    var(--text-color-lightest)
+  );
+  --header-placeholder-background: light-dark(hsl(203deg 56% 45%), #171b21);
 
   /* Tables */
   --table-header-text: var(--text-color-lightest);
@@ -80,8 +90,8 @@
   --treetable-expander: light-dark(hsl(210deg 30% 45%), hsl(210deg 30% 55%));
 
   /* Amount differences. */
-  --diff-red: light-dark(hsl(0deg 48% 40%), hsl(0deg 48% 60%));
-  --diff-green: light-dark(hsl(125deg 48% 40%), hsl(125deg 48% 60%));
+  --diff-red: light-dark(hsl(0deg 48% 40%), #f0705f);
+  --diff-green: light-dark(hsl(125deg 48% 40%), #5fd6a0);
   --diff-negative: var(--diff-red);
   --diff-positive: var(--diff-green);
 
@@ -116,14 +126,20 @@
 
   /* Misc */
   --notification-color: hsl(0deg 0% 100%);
-  --chart-axis: hsl(0deg 0% 60%);
-  --chart-line-at-zero: hsl(0deg 0% 40%);
-  --autocomplete-match: hsl(39deg 100% 70% / 50%);
+  --chart-axis: light-dark(hsl(0deg 0% 60%), #191d23);
+  --chart-line-at-zero: light-dark(hsl(0deg 0% 40%), #2c3138);
+  --autocomplete-match: light-dark(
+    hsl(39deg 100% 70% / 50%),
+    hsl(39deg 90% 62% / 35%)
+  );
   --mobile-button-text: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 79%));
-  --placeholder-color: light-dark(hsl(0deg 0% 47%), hsl(0deg 0% 85%));
-  --placeholder-background: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 30%));
+  --placeholder-color: var(--text-color-lightest);
+  --placeholder-background: light-dark(hsl(0deg 0% 100%), #14181d);
   --dragover-background: hsl(203deg 100% 32% / 50%);
-  --overlay-wrapper-background: hsl(0deg 0% 50% / 50%);
+  --overlay-wrapper-background: light-dark(
+    hsl(0deg 0% 50% / 50%),
+    hsl(0deg 0% 0% / 60%)
+  );
 
   /* Help pages */
   --help-sidebar-background: var(--background-darker);
