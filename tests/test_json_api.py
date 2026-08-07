@@ -301,6 +301,21 @@ def test_api_payee_accounts(
     snapshot(data, json=True)
 
 
+def test_api_dashboard_unrealized_gain(test_client: FlaskClient) -> None:
+    response = test_client.get("/long-example/api/dashboard")
+    data = assert_api_success(response)
+    assert data["currency"] == "USD"
+    assert data["unrealized_gain"] is not None
+
+    # Narrowing to a period with no assets in USD at all: unrealized gain
+    # can't be computed, but this shouldn't error.
+    response = test_client.get(
+        "/long-example/api/dashboard", query_string={"time": "1990"}
+    )
+    data = assert_api_success(response)
+    assert data["unrealized_gain"] is None
+
+
 def test_api_suggest_accounts(test_client: FlaskClient) -> None:
     # Neither payee nor narration is required - e.g. while a new payee is
     # still being typed and no narration has been entered yet.

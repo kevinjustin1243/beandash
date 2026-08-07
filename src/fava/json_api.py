@@ -33,6 +33,7 @@ from fava.beans.funcs import hash_entry
 from fava.context import g
 from fava.core import EntryNotFoundForHashError
 from fava.core.charts import DateAndBalance
+from fava.core.conversion import AT_VALUE
 from fava.core.conversion import UNITS
 from fava.core.documents import filepath_in_document_folder
 from fava.core.documents import is_document_file
@@ -691,6 +692,8 @@ class DashboardReport:
 
     date_range: DateRange | None
     charts: Sequence[ChartData]
+    currency: str
+    unrealized_gain: Decimal | None
 
 
 @api_endpoint
@@ -708,7 +711,32 @@ def get_dashboard() -> DashboardReport:
         ChartApi.hierarchy(options["name_assets"]),
     ]
 
-    return DashboardReport(g.filtered.date_range, charts)
+    # Always valued at market price (regardless of the currently selected
+    # chart conversion) so unrealized gain is meaningful even when viewing
+    # the chart "at cost".
+    currency = next(iter(options["operating_currency"]), "")
+    assets_node = g.filtered.root_tree.get(options["name_assets"]).serialise(
+        AT_VALUE,
+        g.ledger.prices,
+        g.filtered.end_date,
+        with_cost=True,
+    )
+    unrealized_gain = None
+    market = assets_node.balance_children.get(currency)
+    cost = (
+        assets_node.cost_children.get(currency)
+        if assets_node.cost_children
+        else None
+    )
+    if market is not None and cost is not None:
+        unrealized_gain = market - cost
+
+    return DashboardReport(
+        g.filtered.date_range,
+        charts,
+        currency,
+        unrealized_gain,
+    )
 
 
 def _totals_as_date_balance(
@@ -806,9 +834,9 @@ def get_predictions() -> Predictions:
         t.balance.get(currency, zero) for t in expense_totals[-12:]
     ]
     trailing_annual_spend = (
-        (
-            sum(trailing_expenses, zero) / len(trailing_expenses) * 12
-        ).quantize(Decimal("0.01"))
+        (sum(trailing_expenses, zero) / len(trailing_expenses) * 12).quantize(
+            Decimal("0.01")
+        )
         if trailing_expenses
         else zero
     )

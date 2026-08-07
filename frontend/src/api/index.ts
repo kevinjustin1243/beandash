@@ -19,8 +19,10 @@ import {
   insight_validator,
   ledgerDataValidator,
   options_validator,
+  predictions_validator,
   statistics_validator,
   tree_report_validator,
+  uncategorized_transaction_validator,
 } from "./validators.ts";
 
 class InvalidResponseDataError extends Error {
@@ -56,9 +58,11 @@ type GetEndpoint =
   | "payee_transaction"
   | "narration_transaction"
   | "narrations"
+  | "predictions"
   | "query"
   | "statistics"
-  | "suggest_accounts";
+  | "suggest_accounts"
+  | "uncategorized_transaction";
 type PutEndpoint =
   | "add_document"
   | "add_entries"
@@ -292,6 +296,11 @@ export const get_payee_transaction = define_endpoint(
   Transaction.validator,
   ["payee"],
 );
+export const get_predictions = define_endpoint(
+  "predictions",
+  predictions_validator,
+  [...filters, "conversion"],
+);
 export const get_query = define_endpoint("query", query_validator, [
   ...filters,
   "query_string",
@@ -315,6 +324,10 @@ export const get_trial_balance = define_endpoint(
   "trial_balance",
   tree_report_validator,
   filters_conversion_interval,
+);
+export const get_uncategorized_transaction = define_paramless_endpoint(
+  "uncategorized_transaction",
+  uncategorized_transaction_validator,
 );
 
 type Put<T> = (body: T) => Promise<string>;

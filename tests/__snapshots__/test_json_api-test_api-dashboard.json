@@ -667,5 +667,7 @@
       "type": "hierarchy"
     }
   ],
-  "date_range": null
+  "currency": "USD",
+  "date_range": null,
+  "unrealized_gain": 11117.90304
 }

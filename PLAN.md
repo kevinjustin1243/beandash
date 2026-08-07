@@ -2,8 +2,7 @@
 
 ## Status
 
-Phases 1–7 done and pushed to `main`. Phase 8 (Overview page rebuild) in progress. Phases 9–10
-pending.
+Phases 1–8 done and pushed to `main`. Phases 9–10 pending.
 
 | Phase | Status |
 | --- | --- |
@@ -14,7 +13,7 @@ pending.
 | 5 — Anomaly / insight detection | ✅ Done |
 | 6 — Dark theme & typography | ✅ Done |
 | 7 — Predictions engine backend upgrades | ✅ Done |
-| 8 — Overview page rebuild (frontend) | 🔄 In progress |
+| 8 — Overview page rebuild (frontend) | ✅ Done |
 | 9 — Live stock prices (Finnhub) | ⏳ Pending |
 | 10 — Dedicated pages + sidebar restructure | ⏳ Pending |
 
@@ -407,7 +406,7 @@ codebase holds.
 
 ## Phase 8 — Overview page rebuild (frontend)
 
-**Status: 🔄 In progress**
+**Status: ✅ Done**
 
 **Goal:** rebuild `frontend/src/reports/dashboard/{index.ts,Dashboard.svelte}` to match the
 mockup's Overview layout, on top of the Phase 6 visual system and Phase 7 data.

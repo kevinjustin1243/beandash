@@ -155,7 +155,36 @@ export const tree_report_validator = object({
 export const dashboard_validator = object({
   charts: charts_validator,
   date_range: optional(date_range),
+  currency: string,
+  unrealized_gain: optional(number),
 });
+
+export const predictions_validator = object({
+  currency: string,
+  net_worth: number,
+  net_worth_projected: number,
+  net_worth_r_squared: number,
+  savings_rate: optional(number),
+  spend_next_period: optional(number),
+  cash_flow_90d: optional(number),
+  fi_target: number,
+  fi_years: optional(number),
+});
+
+export type Predictions = ValidationT<typeof predictions_validator>;
+
+export const uncategorized_transaction_validator = optional(
+  object({
+    entry: entryValidator,
+    entry_hash: string,
+    placeholder_account: string,
+    suggestions: array(tuple(string, number)),
+  }),
+);
+
+export type UncategorizedTransaction = ValidationT<
+  typeof uncategorized_transaction_validator
+>;
 
 export const account_report_validator = object({
   charts: charts_validator,

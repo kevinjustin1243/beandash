@@ -6,6 +6,48 @@ svelte-component.error {
   border: 1px solid var(--error);
 }
 
+/*
+Shared "card" and stat-value building blocks, used by the dashboard report
+and any other panel-based layout.
+*/
+
+.card {
+  padding: 1.25em;
+  background-color: var(--background-darker);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.card-label {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--text-color-lightest);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-family: var(--font-family-monospaced);
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.stat-muted {
+  color: var(--text-color-lightest);
+}
+
+.stat-forecast {
+  color: var(--accent-forecast);
+}
+
+.stat-positive {
+  color: var(--green);
+}
+
+.stat-negative {
+  color: var(--red);
+}
+
 details {
   display: block;
   min-width: 400px;
