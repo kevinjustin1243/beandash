@@ -4,7 +4,9 @@ import datetime
 from decimal import Decimal
 
 from fava.core.charts import DateAndBalance
+from fava.core.forecast import Forecast
 from fava.core.forecast import forecast
+from fava.core.forecast import years_to_target
 from fava.core.inventory import SimpleCounterInventory
 
 
@@ -24,8 +26,10 @@ def _points(
 
 
 def test_forecast_too_little_data() -> None:
-    assert forecast([]) == []
-    assert forecast(_points(datetime.date(2020, 1, 1), 30, [100])) == []
+    assert forecast([]) == Forecast(points=[], by_currency={})
+    assert forecast(
+        _points(datetime.date(2020, 1, 1), 30, [100]),
+    ) == Forecast(points=[], by_currency={})
 
 
 def test_forecast_linear_trend() -> None:
@@ -33,20 +37,58 @@ def test_forecast_linear_trend() -> None:
     data = _points(start, 30, [100, 110, 120, 130, 140, 150])
 
     result = forecast(data)
-    assert result
+    assert result.points
 
     # The first point anchors to the last historic value, so a chart can
-    # draw a continuous line without a visual gap.
-    assert result[0].date == start + datetime.timedelta(days=150)
-    assert result[0].balance == {"USD (projected)": Decimal(150)}
+    # draw a continuous line without a visual gap - and has no band, since
+    # it isn't actually a projection.
+    first = result.points[0]
+    assert first.date == start + datetime.timedelta(days=150)
+    assert first.balance == {"USD (projected)": Decimal(150)}
 
     # 30 days later (one more "step"), the perfectly linear trend
-    # continues by exactly one more increment.
-    assert result[1].date == start + datetime.timedelta(days=180)
-    assert result[1].balance["USD (projected)"] == Decimal(160)
+    # continues by exactly one more increment - and a perfectly linear
+    # trend has zero residual error, so the band collapses to the point
+    # estimate.
+    second = result.points[1]
+    assert second.date == start + datetime.timedelta(days=180)
+    assert second.balance["USD (projected)"] == Decimal(160)
+    assert second.balance["USD (projected high)"] == Decimal(160)
+    assert second.balance["USD (projected low)"] == Decimal(160)
 
     # ~1 year out (FORECAST_HORIZON_DAYS), continuing the same trend.
-    assert result[-1].balance["USD (projected)"] == Decimal(150 + 10 * 12)
+    assert result.points[-1].balance["USD (projected)"] == Decimal(
+        150 + 10 * 12,
+    )
+
+    # Per-currency stats: a perfect fit has r² of 1 and a $10/step slope.
+    stats = result.by_currency["USD"]
+    assert stats.projected == result.points[-1].balance["USD (projected)"]
+    assert stats.r_squared == 1.0
+    assert stats.daily_change == Decimal(str(round(10 / 30, 2)))
+
+
+def test_forecast_band_widens_with_distance() -> None:
+    # A noisy (non-perfectly-linear) series has a non-zero residual stdev,
+    # so the band should be a real range, and should widen further out.
+    start = datetime.date(2020, 1, 1)
+    values = [100, 115, 108, 130, 122, 145]
+    data = _points(start, 30, values)
+
+    result = forecast(data)
+    assert result.points
+    stats = result.by_currency["USD"]
+    assert 0 < stats.r_squared < 1
+
+    near = result.points[1].balance
+    far = result.points[-1].balance
+    near_width = near["USD (projected high)"] - near["USD (projected low)"]
+    far_width = far["USD (projected high)"] - far["USD (projected low)"]
+    assert near_width > 0
+    assert far_width > near_width
+    # The point estimate should sit inside its own band.
+    assert near["USD (projected low)"] <= near["USD (projected)"]
+    assert near["USD (projected)"] <= near["USD (projected high)"]
 
 
 def test_forecast_multiple_currencies() -> None:
@@ -61,9 +103,10 @@ def test_forecast_multiple_currencies() -> None:
     ]
 
     result = forecast(data)
-    assert result
-    assert result[1].balance["USD (projected)"] == Decimal(140)
-    assert result[1].balance["EUR (projected)"] == Decimal(30)
+    assert result.points
+    assert result.points[1].balance["USD (projected)"] == Decimal(140)
+    assert result.points[1].balance["EUR (projected)"] == Decimal(30)
+    assert set(result.by_currency) == {"USD", "EUR"}
 
 
 def test_forecast_uses_recent_trend_not_whole_history() -> None:
@@ -77,10 +120,12 @@ def test_forecast_uses_recent_trend_not_whole_history() -> None:
     data = [*flat, *uptrend]
 
     result = forecast(data)
-    assert result
+    assert result.points
     last_value = 100 + 10 * 23
-    assert result[0].balance["USD (projected)"] == Decimal(last_value)
-    assert result[1].balance["USD (projected)"] == Decimal(last_value + 10)
+    assert result.points[0].balance["USD (projected)"] == Decimal(last_value)
+    assert result.points[1].balance["USD (projected)"] == Decimal(
+        last_value + 10,
+    )
 
 
 def test_forecast_ignores_currency_seen_only_once() -> None:
@@ -98,9 +143,10 @@ def test_forecast_ignores_currency_seen_only_once() -> None:
     ]
 
     result = forecast(data)
-    assert result
-    assert "EUR (projected)" not in result[-1].balance
-    assert "USD (projected)" in result[-1].balance
+    assert result.points
+    assert "EUR (projected)" not in result.points[-1].balance
+    assert "USD (projected)" in result.points[-1].balance
+    assert set(result.by_currency) == {"USD"}
 
 
 def test_forecast_ignores_currency_with_no_trend() -> None:
@@ -111,4 +157,21 @@ def test_forecast_ignores_currency_with_no_trend() -> None:
         DateAndBalance(same_date, SimpleCounterInventory({"USD": Decimal(1)})),
         DateAndBalance(same_date, SimpleCounterInventory({"USD": Decimal(2)})),
     ]
-    assert forecast(data) == []
+    assert forecast(data) == Forecast(points=[], by_currency={})
+
+
+def test_years_to_target_already_there() -> None:
+    assert years_to_target(100.0, 1.0, 50.0) == 0.0
+    assert years_to_target(100.0, 1.0, 100.0) == 0.0
+
+
+def test_years_to_target_never_gets_there() -> None:
+    assert years_to_target(50.0, 0.0, 100.0) is None
+    assert years_to_target(50.0, -1.0, 100.0) is None
+
+
+def test_years_to_target_computes_years() -> None:
+    # $10/day for 365 days is $3650/year: 2 years to close a $7300 gap.
+    result = years_to_target(0.0, 10.0, 7300.0)
+    assert result is not None
+    assert round(result, 2) == 2.0

@@ -296,96 +296,168 @@
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 16551.28,
+            "IRAUSD (projected low)": 5788.48,
             "IRAUSD (projected)": 11169.88,
+            "USD (projected high)": 95844.08,
+            "USD (projected low)": 92703.24,
             "USD (projected)": 94273.66,
+            "VACHR (projected high)": -7.83,
+            "VACHR (projected low)": -118.43,
             "VACHR (projected)": -63.13
           },
           "date": "2016-06-30"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 16961.98,
+            "IRAUSD (projected low)": 5792.89,
             "IRAUSD (projected)": 11377.43,
+            "USD (projected high)": 98720.55,
+            "USD (projected low)": 95517.51,
             "USD (projected)": 97119.03,
+            "VACHR (projected high)": -14.24,
+            "VACHR (projected low)": -127.03,
             "VACHR (projected)": -70.63
           },
           "date": "2016-07-30"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 17365.53,
+            "IRAUSD (projected low)": 5804.43,
             "IRAUSD (projected)": 11584.98,
+            "USD (projected high)": 101596.43,
+            "USD (projected low)": 98332.38,
             "USD (projected)": 99964.4,
+            "VACHR (projected high)": -20.67,
+            "VACHR (projected low)": -135.61,
             "VACHR (projected)": -78.14
           },
           "date": "2016-08-29"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 17762.66,
+            "IRAUSD (projected low)": 5822.4,
             "IRAUSD (projected)": 11792.53,
+            "USD (projected high)": 104471.75,
+            "USD (projected low)": 101147.8,
             "USD (projected)": 102809.77,
+            "VACHR (projected high)": -27.12,
+            "VACHR (projected low)": -144.16,
             "VACHR (projected)": -85.64
           },
           "date": "2016-09-28"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 18153.95,
+            "IRAUSD (projected low)": 5846.21,
             "IRAUSD (projected)": 12000.08,
+            "USD (projected high)": 107346.54,
+            "USD (projected low)": 103963.75,
             "USD (projected)": 105655.14,
+            "VACHR (projected high)": -33.59,
+            "VACHR (projected low)": -152.7,
             "VACHR (projected)": -93.15
           },
           "date": "2016-10-28"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 18539.91,
+            "IRAUSD (projected low)": 5875.35,
             "IRAUSD (projected)": 12207.63,
+            "USD (projected high)": 110220.82,
+            "USD (projected low)": 106780.21,
             "USD (projected)": 108500.51,
+            "VACHR (projected high)": -40.07,
+            "VACHR (projected low)": -161.23,
             "VACHR (projected)": -100.65
           },
           "date": "2016-11-27"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 18920.97,
+            "IRAUSD (projected low)": 5909.38,
             "IRAUSD (projected)": 12415.18,
+            "USD (projected high)": 113094.63,
+            "USD (projected low)": 109597.14,
             "USD (projected)": 111345.88,
+            "VACHR (projected high)": -46.58,
+            "VACHR (projected low)": -169.73,
             "VACHR (projected)": -108.15
           },
           "date": "2016-12-27"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 19297.53,
+            "IRAUSD (projected low)": 5947.92,
             "IRAUSD (projected)": 12622.73,
+            "USD (projected high)": 115967.98,
+            "USD (projected low)": 112414.53,
             "USD (projected)": 114191.25,
+            "VACHR (projected high)": -53.09,
+            "VACHR (projected low)": -178.22,
             "VACHR (projected)": -115.66
           },
           "date": "2017-01-26"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 19669.92,
+            "IRAUSD (projected low)": 5990.64,
             "IRAUSD (projected)": 12830.28,
+            "USD (projected high)": 118840.9,
+            "USD (projected low)": 115232.35,
             "USD (projected)": 117036.62,
+            "VACHR (projected high)": -59.63,
+            "VACHR (projected low)": -186.69,
             "VACHR (projected)": -123.16
           },
           "date": "2017-02-25"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 20038.42,
+            "IRAUSD (projected low)": 6037.23,
             "IRAUSD (projected)": 13037.83,
+            "USD (projected high)": 121713.4,
+            "USD (projected low)": 118050.59,
             "USD (projected)": 119881.99,
+            "VACHR (projected high)": -66.18,
+            "VACHR (projected low)": -195.15,
             "VACHR (projected)": -130.66
           },
           "date": "2017-03-27"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 20403.31,
+            "IRAUSD (projected low)": 6087.44,
             "IRAUSD (projected)": 13245.37,
+            "USD (projected high)": 124585.51,
+            "USD (projected low)": 120869.22,
             "USD (projected)": 122727.37,
+            "VACHR (projected high)": -72.74,
+            "VACHR (projected low)": -203.6,
             "VACHR (projected)": -138.17
           },
           "date": "2017-04-26"
         },
         {
           "balance": {
+            "IRAUSD (projected high)": 20764.81,
+            "IRAUSD (projected low)": 6141.04,
             "IRAUSD (projected)": 13452.92,
+            "USD (projected high)": 127457.24,
+            "USD (projected low)": 123688.23,
             "USD (projected)": 125572.74,
+            "VACHR (projected high)": -79.31,
+            "VACHR (projected low)": -212.03,
             "VACHR (projected)": -145.67
           },
           "date": "2017-05-26"

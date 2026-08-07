@@ -51,6 +51,7 @@ def test_fava_options(load_doc_custom_entries: list[Custom]) -> None:
     2016-04-14 custom "fava-option" "conversion-currencies" "USD EUR HOOLI"
     2016-06-14 custom "fava-option" "default-file" "/some/file/name"
     2016-04-14 custom "fava-option" "default-page" "balance_sheet/"
+    2016-04-14 custom "fava-option" "uncategorized-account" "Equity:Unknown"
     2016-04-14 custom "fava-option" "language" "en"
     """
 
@@ -78,6 +79,11 @@ def test_fava_options(load_doc_custom_entries: list[Custom]) -> None:
     assert options.conversion_currencies == ("USD", "EUR", "HOOLI")
     assert options.default_file == str(Path("/some/file/name").absolute())
     assert options.default_page == "balance_sheet/"
+    assert options.uncategorized_account == "Equity:Unknown"
+
+
+def test_fava_options_uncategorized_account_default() -> None:
+    assert FavaOptions().uncategorized_account == "Expenses:Uncategorized"
 
 
 def test_fava_options_language() -> None:

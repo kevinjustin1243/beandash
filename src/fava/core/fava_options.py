@@ -108,6 +108,7 @@ class FavaOptions:
     show_closed_accounts: bool = False
     show_metadata_indicators: bool = True
     sidebar_show_queries: int = 5
+    uncategorized_account: str = "Expenses:Uncategorized"
     upcoming_events: int = 7
     uptodate_indicator_grey_lookback_days: int = 60
 

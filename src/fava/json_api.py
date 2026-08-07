@@ -11,6 +11,7 @@ import shutil
 from abc import abstractmethod
 from dataclasses import dataclass
 from dataclasses import fields
+from decimal import Decimal
 from functools import wraps
 from http import HTTPStatus
 from inspect import Parameter
@@ -28,8 +29,10 @@ from flask_babel import gettext
 
 from fava.beans.abc import Document
 from fava.beans.abc import Event
+from fava.beans.funcs import hash_entry
 from fava.context import g
 from fava.core import EntryNotFoundForHashError
+from fava.core.charts import DateAndBalance
 from fava.core.conversion import UNITS
 from fava.core.documents import filepath_in_document_folder
 from fava.core.documents import is_document_file
@@ -37,7 +40,10 @@ from fava.core.file import GeneratedEntryError
 from fava.core.file import get_entry_slice
 from fava.core.filters import FilterError
 from fava.core.forecast import forecast
+from fava.core.forecast import PROJECTED_SUFFIX
+from fava.core.forecast import years_to_target
 from fava.core.group_entries import group_entries_by_type
+from fava.core.inventory import SimpleCounterInventory
 from fava.core.misc import align
 from fava.helpers import FavaAPIError
 from fava.internal_api import BalancesChart
@@ -46,19 +52,20 @@ from fava.internal_api import get_errors
 from fava.internal_api import get_ledger_data
 from fava.serialisation import deserialise
 from fava.serialisation import serialise
+from fava.util.date import Month
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Callable
+    from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
     from datetime import date
-    from decimal import Decimal
 
     from flask.wrappers import Response
 
     from fava.beans.abc import Directive
+    from fava.core.charts import DateAndBalanceWithBudget
     from fava.core.insights import Insight
-    from fava.core.inventory import SimpleCounterInventory
     from fava.core.query import QueryResultTable
     from fava.core.query import QueryResultText
     from fava.core.tree import SerialisedTreeNode
@@ -318,7 +325,8 @@ def get_suggest_accounts() -> Sequence[str]:
     """Suggest accounts based on the text of the payee/narration."""
     payee = request.args.get("payee", "")
     narration = request.args.get("narration", "")
-    return g.ledger.suggest.suggest_accounts(f"{payee} {narration}")
+    scored = g.ledger.suggest.suggest_accounts(f"{payee} {narration}")
+    return [account for account, _score in scored]
 
 
 @api_endpoint
@@ -695,12 +703,196 @@ def get_dashboard() -> DashboardReport:
     charts = [
         BalancesChart(
             gettext("Net Worth"),
-            [*net_worth_data, *forecast(net_worth_data)],
+            [*net_worth_data, *forecast(net_worth_data).points],
         ),
         ChartApi.hierarchy(options["name_assets"]),
     ]
 
     return DashboardReport(g.filtered.date_range, charts)
+
+
+def _totals_as_date_balance(
+    totals: Iterable[DateAndBalanceWithBudget],
+    *,
+    negate: bool = False,
+) -> list[DateAndBalance]:
+    """Convert interval totals into plain (date, balance) points."""
+    return [
+        DateAndBalance(
+            t.date,
+            SimpleCounterInventory(
+                {c: (-v if negate else v) for c, v in t.balance.items()},
+            ),
+        )
+        for t in totals
+    ]
+
+
+@dataclass(frozen=True)
+class Predictions:
+    """Forecast-derived summary stats for the dashboard's forecast tiles."""
+
+    currency: str
+    net_worth: Decimal
+    net_worth_projected: Decimal
+    net_worth_r_squared: float
+    savings_rate: float | None
+    spend_next_period: Decimal | None
+    cash_flow_90d: Decimal | None
+    fi_target: Decimal
+    fi_years: float | None
+
+
+@api_endpoint
+def get_predictions() -> Predictions:
+    """Get forecast-derived stats: spend, cash flow, and FI target."""
+    g.ledger.changed()
+    options = g.ledger.options
+    currency = next(iter(options["operating_currency"]), "")
+    zero = Decimal(0)
+
+    net_worth_data = g.ledger.charts.net_worth(g.filtered, Month, g.conv)
+    net_worth_forecast = forecast(net_worth_data)
+    nw_stats = net_worth_forecast.by_currency.get(currency)
+    current_net_worth = (
+        net_worth_data[-1].balance.get(currency, zero)
+        if net_worth_data
+        else zero
+    )
+
+    expense_totals = list(
+        g.ledger.charts.interval_totals(
+            g.filtered, Month, options["name_expenses"], g.conv
+        ),
+    )
+    income_totals = list(
+        g.ledger.charts.interval_totals(
+            g.filtered, Month, options["name_income"], g.conv
+        ),
+    )
+    expense_forecast = forecast(_totals_as_date_balance(expense_totals))
+    income_forecast = forecast(
+        _totals_as_date_balance(income_totals, negate=True),
+    )
+    expense_points = expense_forecast.points
+    income_points = income_forecast.points
+    has_expense_trend = currency in expense_forecast.by_currency
+    has_income_trend = currency in income_forecast.by_currency
+
+    key = f"{currency}{PROJECTED_SUFFIX}"
+
+    spend_next_period = (
+        expense_points[1].balance[key]
+        if has_expense_trend and len(expense_points) > 1
+        else None
+    )
+
+    cash_flow_90d = None
+    if (
+        has_expense_trend
+        and has_income_trend
+        and len(expense_points) > 3
+        and len(income_points) > 3
+    ):
+        cash_flow_90d = sum(
+            (
+                income_points[i].balance[key] - expense_points[i].balance[key]
+                for i in range(1, 4)
+            ),
+            zero,
+        )
+
+    trailing_expenses = [
+        t.balance.get(currency, zero) for t in expense_totals[-12:]
+    ]
+    trailing_annual_spend = (
+        (
+            sum(trailing_expenses, zero) / len(trailing_expenses) * 12
+        ).quantize(Decimal("0.01"))
+        if trailing_expenses
+        else zero
+    )
+    fi_target = (trailing_annual_spend * 25).quantize(Decimal("0.01"))
+
+    savings_rate = None
+    trailing_income_6 = [
+        -t.balance.get(currency, zero) for t in income_totals[-6:]
+    ]
+    trailing_expenses_6 = [
+        t.balance.get(currency, zero) for t in expense_totals[-6:]
+    ]
+    total_income = sum(trailing_income_6, zero)
+    total_expense = sum(trailing_expenses_6, zero)
+    if total_income > 0:
+        savings_rate = float((total_income - total_expense) / total_income)
+
+    fi_years = (
+        years_to_target(
+            float(current_net_worth),
+            float(nw_stats.daily_change),
+            float(fi_target),
+        )
+        if nw_stats is not None
+        else None
+    )
+
+    return Predictions(
+        currency=currency,
+        net_worth=current_net_worth,
+        net_worth_projected=nw_stats.projected if nw_stats else zero,
+        net_worth_r_squared=nw_stats.r_squared if nw_stats else 0.0,
+        savings_rate=savings_rate,
+        spend_next_period=spend_next_period,
+        cash_flow_90d=cash_flow_90d,
+        fi_target=fi_target,
+        fi_years=fi_years,
+    )
+
+
+@dataclass(frozen=True)
+class UncategorizedTransaction:
+    """A transaction still posted to the placeholder account.
+
+    Includes suggested accounts to replace it.
+    """
+
+    entry: Any
+    entry_hash: str
+    placeholder_account: str
+    suggestions: Sequence[tuple[str, float]]
+
+
+@api_endpoint
+def get_uncategorized_transaction() -> UncategorizedTransaction | None:
+    """Find the most recent transaction still needing categorization.
+
+    "Needing categorization" means it has a posting to the ledger's
+    configured placeholder account (`uncategorized-account` fava-option,
+    default `Expenses:Uncategorized`), together with suggested accounts
+    to replace it with.
+    """
+    g.ledger.changed()
+    placeholder = g.ledger.fava_options.uncategorized_account
+
+    txn = None
+    for candidate in reversed(g.ledger.all_entries_by_type.Transaction):
+        if any(
+            posting.account == placeholder for posting in candidate.postings
+        ):
+            txn = candidate
+            break
+    if txn is None:
+        return None
+
+    suggestions = g.ledger.suggest.suggest_accounts(
+        f"{txn.payee or ''} {txn.narration}",
+    )
+    return UncategorizedTransaction(
+        entry=serialise(txn),
+        entry_hash=hash_entry(txn),
+        placeholder_account=placeholder,
+        suggestions=suggestions[:5],
+    )
 
 
 @api_endpoint

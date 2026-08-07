@@ -67,11 +67,12 @@ def test_suggest_accounts_new_payee() -> None:
     # narration text overlaps with the historic "groceries" transactions.
     result = module.suggest_accounts("Trader Joes groceries")
     assert result
-    assert result[0] == "Expenses:Food:Groceries"
+    assert result[0][0] == "Expenses:Food:Groceries"
+    assert result[0][1] > 0
 
     result = module.suggest_accounts("Chevron gas station")
     assert result
-    assert result[0] == "Expenses:Auto:Fuel"
+    assert result[0][0] == "Expenses:Auto:Fuel"
 
     # Text unrelated to any historic transaction should suggest nothing.
     assert module.suggest_accounts("asdkjfh qwlekjr") == []
@@ -88,6 +89,6 @@ def test_suggest_accounts_example_ledger(example_ledger: FavaLedger) -> None:
     # should still surface that account.
     result = suggest.suggest_accounts("My Bank monthly banking fee charge")
     assert result
-    assert result[0] == "Expenses:Financial:Fees"
+    assert result[0][0] == "Expenses:Financial:Fees"
 
     assert suggest.suggest_accounts("") == []

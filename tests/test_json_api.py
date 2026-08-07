@@ -337,6 +337,63 @@ def test_api_insights(test_client: FlaskClient) -> None:
     assert_api_success(response, [])
 
 
+def test_api_predictions(test_client: FlaskClient) -> None:
+    response = test_client.get("/long-example/api/predictions")
+    data = assert_api_success(response)
+    assert data.keys() == {
+        "currency",
+        "net_worth",
+        "net_worth_projected",
+        "net_worth_r_squared",
+        "savings_rate",
+        "spend_next_period",
+        "cash_flow_90d",
+        "fi_target",
+        "fi_years",
+    }
+    assert data["currency"] == "USD"
+    assert isinstance(data["net_worth_r_squared"], float)
+    assert data["fi_target"] is not None
+
+    # Narrowing to a period with no transactions at all: everything about
+    # the (nonexistent) trend is empty/unknown, but this shouldn't error.
+    response = test_client.get(
+        "/long-example/api/predictions", query_string={"time": "1990"}
+    )
+    data = assert_api_success(response)
+    assert data["savings_rate"] is None
+    assert data["fi_years"] is None
+
+
+def test_api_uncategorized_transaction(
+    test_client: FlaskClient,
+    app: Flask,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # long-example.beancount has no postings to the default placeholder
+    # account, so there's nothing to categorize.
+    response = test_client.get("/long-example/api/uncategorized_transaction")
+    assert_api_success(response, None)
+
+    # Point the placeholder at an account that does have postings.
+    with app.test_request_context("/long-example/"):
+        app.preprocess_request()
+        monkeypatch.setattr(
+            g.ledger.fava_options,
+            "uncategorized_account",
+            "Expenses:Financial:Fees",
+        )
+
+        response = test_client.get(
+            "/long-example/api/uncategorized_transaction",
+        )
+        data = assert_api_success(response)
+        assert data["placeholder_account"] == "Expenses:Financial:Fees"
+        assert data["entry"]["payee"] == "BANK FEES"
+        assert data["suggestions"]
+        assert data["suggestions"][0][0] == "Expenses:Financial:Fees"
+
+
 def test_api_payee_transaction(
     test_client: FlaskClient,
     snapshot: SnapshotFunc,

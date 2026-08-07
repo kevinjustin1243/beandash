@@ -58,14 +58,17 @@ class SuggestModule(FavaModule):
             for token, freq in document_frequency.items()
         }
 
-    def suggest_accounts(self, text: str) -> Sequence[str]:
+    def suggest_accounts(self, text: str) -> Sequence[tuple[str, float]]:
         """Rank accounts by similarity of the given text to their history.
 
         Args:
             text: Free-form text, e.g. a transaction's payee and narration.
 
         Returns:
-            Accounts with a non-zero match, best match first.
+            ``(account, score)`` pairs with a non-zero match, best match
+            first. The score is an unbounded TF-IDF-style dot product, not
+            a calibrated probability - callers wanting a 0-100% confidence
+            should normalise it themselves (e.g. relative to the top score).
         """
         tokens = tokenize(text)
         if not tokens:
@@ -78,4 +81,4 @@ class SuggestModule(FavaModule):
             )
             if score:
                 scores[account] = score
-        return sorted(scores, key=scores.__getitem__, reverse=True)
+        return sorted(scores.items(), key=lambda item: item[1], reverse=True)
