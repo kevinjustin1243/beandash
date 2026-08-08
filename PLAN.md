@@ -2,7 +2,7 @@
 
 ## Status
 
-Phases 1–9 done and pushed to `main`. Phase 10 pending.
+Phases 1–10 done and pushed to `main`. Part 2 of the plan is complete.
 
 | Phase | Status |
 | --- | --- |
@@ -15,7 +15,7 @@ Phases 1–9 done and pushed to `main`. Phase 10 pending.
 | 7 — Predictions engine backend upgrades | ✅ Done |
 | 8 — Overview page rebuild (frontend) | ✅ Done |
 | 9 — Live stock prices (Finnhub) | ✅ Done |
-| 10 — Dedicated pages + sidebar restructure | ⏳ Pending |
+| 10 — Dedicated pages + sidebar restructure | ✅ Done |
 
 ## Context
 
@@ -484,7 +484,7 @@ tab).
 
 ## Phase 10 — Dedicated Net worth / Holdings / Predictions pages + sidebar restructure
 
-**Status: ⏳ Pending**
+**Status: ✅ Done**
 
 **Goal:** match the mockup's sidebar IA — a "DASHBOARDS" group (Overview, Net worth, Holdings,
 Predictions) above a "LEDGER" group (Journal, Balance sheet, Income statement, Trial balance,

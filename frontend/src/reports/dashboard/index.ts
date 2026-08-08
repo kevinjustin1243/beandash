@@ -1,9 +1,6 @@
 import {
-  get_commodities,
-  get_dashboard,
   get_holdings,
   get_insights,
-  get_predictions,
   get_uncategorized_transaction,
 } from "../../api/index.ts";
 import type {
@@ -14,13 +11,11 @@ import type {
   UncategorizedTransaction,
 } from "../../api/validators.ts";
 import type { ParsedFavaChart } from "../../charts/index.ts";
-import { LineChart, ParsedLineChart } from "../../charts/line.ts";
-import { domHelpers } from "../../charts/tooltip.ts";
-import { day } from "../../format.ts";
 import { _ } from "../../i18n.ts";
 import { getURLFilters } from "../../stores/filters.ts";
 import { Route } from "../route.ts";
 import Dashboard from "./Dashboard.svelte";
+import { load_net_worth_hero } from "./net_worth_data.ts";
 
 export interface DashboardReportProps {
   charts: ParsedFavaChart[];
@@ -36,100 +31,22 @@ export interface DashboardReportProps {
   commodities: Commodities;
 }
 
-/**
- * Build a chart of the return (in percent, relative to the first known
- * price) of each commodity pair, so that holdings of different price
- * ranges can be compared on a single chart.
- */
-function performance_chart(commodities: Commodities): LineChart | null {
-  const series = commodities.flatMap(({ base, quote, prices }) => {
-    const start = prices[0]?.[1];
-    if (start == null || !start || prices.length < 2) {
-      return [];
-    }
-    const name = `${base} / ${quote}`;
-    const values = prices.map(([date, price]) => ({
-      name,
-      date,
-      value: ((price - start) / start) * 100,
-    }));
-    return [{ name, values }];
-  });
-  if (!series.length) {
-    return null;
-  }
-  return new LineChart(_("Performance"), series, (_c, d) => [
-    `${d.name}: ${d.value.toFixed(2)}%`,
-    domHelpers.em(day(d.date)),
-  ]);
-}
-
-/**
- * Current net worth and the change from the previous historic data point,
- * for the given currency - read directly off the (already-fetched) Net
- * Worth chart rather than a separate request. Only actual historic points
- * are considered (not the forecast/band series appended to the same chart).
- */
-function net_worth_and_change(
-  charts: readonly ParsedFavaChart[],
-  currency: string,
-): { netWorth: number | null; netWorthChange: number | null } {
-  // get_dashboard() always puts the Net Worth chart first.
-  const net_worth_chart = charts[0];
-  const historic = (
-    net_worth_chart instanceof ParsedLineChart ? net_worth_chart.data : []
-  ).filter((d) => d.balance[currency] !== undefined);
-  const last = historic.at(-1);
-  const previous = historic.at(-2);
-  return {
-    netWorth: last ? (last.balance[currency] ?? null) : null,
-    netWorthChange:
-      last && previous
-        ? (last.balance[currency] ?? 0) - (previous.balance[currency] ?? 0)
-        : null,
-  };
-}
-
 export const dashboard = new Route<DashboardReportProps>(
   "dashboard",
   Dashboard,
   async (url) => {
     const filters = getURLFilters(url);
-    const [
-      report,
-      commodities,
-      insights,
-      predictions,
-      uncategorized,
-      holdings,
-    ] = await Promise.all([
-      get_dashboard(filters),
-      get_commodities(filters),
+    const [hero, insights, uncategorized, holdings] = await Promise.all([
+      load_net_worth_hero(filters),
       get_insights(filters),
-      get_predictions(filters),
       get_uncategorized_transaction(),
       get_holdings(filters),
     ]);
-    const performance = performance_chart(commodities);
-    const charts = performance
-      ? [...report.charts, performance]
-      : report.charts;
-    const { netWorth, netWorthChange } = net_worth_and_change(
-      charts,
-      report.currency,
-    );
     return {
-      charts,
-      date_range: report.date_range,
-      currency: report.currency,
-      unrealizedGain: report.unrealized_gain,
-      netWorth,
-      netWorthChange,
+      ...hero,
       insights,
-      predictions,
       uncategorized,
       holdings,
-      commodities,
     };
   },
   () => _("Dashboard"),

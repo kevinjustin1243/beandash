@@ -23,8 +23,15 @@
     {/each}
   </ul>
 {/if}
+<div class="nav-group-label card-label">{_("Dashboards")}</div>
 <ul class="navigation">
-  <Link report="dashboard" name={_("Dashboard")} key="g D" />
+  <Link report="dashboard" name={_("Overview")} key="g D" />
+  <Link report="net_worth" name={_("Net worth")} key="g n" />
+  <Link report="holdings_live" name={_("Holdings")} key="g h" />
+  <Link report="predictions" name={_("Predictions")} key="g p" />
+</ul>
+<div class="nav-group-label card-label">{_("Ledger")}</div>
+<ul class="navigation">
   <Link report="income_statement" name={_("Income Statement")} key="g i" />
   <Link report="balance_sheet" name={_("Balance Sheet")} key="g b" />
   <Link report="trial_balance" name={_("Trial Balance")} key="g t" />
@@ -50,7 +57,6 @@
   <AccountSelector />
 </ul>
 <ul class="navigation">
-  <Link report="holdings" name={_("Holdings")} key="g h" />
   <Link report="commodities" name={_("Commodities")} key="g c" />
   <Link report="documents" name={_("Documents")} key="g d" />
   <Link
@@ -91,6 +97,10 @@
   .navigation + .navigation {
     padding-top: 0.5rem;
     border-top: 1px solid var(--sidebar-border);
+  }
+
+  .nav-group-label {
+    padding: 0.5em 0.5em 0.25em 1em;
   }
 
   a {
