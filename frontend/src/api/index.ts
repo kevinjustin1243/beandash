@@ -16,8 +16,10 @@ import {
   context_validator,
   dashboard_validator,
   error_validator,
+  holding_validator,
   insight_validator,
   ledgerDataValidator,
+  live_prices_validator,
   options_validator,
   predictions_validator,
   statistics_validator,
@@ -48,11 +50,13 @@ type GetEndpoint =
   | "documents"
   | "errors"
   | "events"
+  | "holdings"
   | "income_statement"
   | "insights"
   | "journal_page"
   | "trial_balance"
   | "ledger_data"
+  | "live_prices"
   | "options"
   | "payee_accounts"
   | "payee_transaction"
@@ -89,6 +93,7 @@ type ApiParams = Partial<{
   query_string: string;
   r: string;
   sha256sum: string;
+  tickers: string;
   time: string;
 }>;
 type ApiParam = keyof ApiParams;
@@ -254,6 +259,11 @@ export const get_events = define_endpoint(
   array(Event.validator),
   filters,
 );
+export const get_holdings = define_endpoint(
+  "holdings",
+  array(holding_validator),
+  filters,
+);
 export const get_income_statement = define_endpoint(
   "income_statement",
   tree_report_validator,
@@ -272,6 +282,11 @@ export const get_journal_page = define_endpoint(
 export const get_ledger_data = define_paramless_endpoint(
   "ledger_data",
   ledgerDataValidator,
+);
+export const get_live_prices = define_endpoint(
+  "live_prices",
+  live_prices_validator,
+  ["tickers"],
 );
 export const get_narration_transaction = define_endpoint(
   "narration_transaction",

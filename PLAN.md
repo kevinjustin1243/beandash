@@ -2,7 +2,7 @@
 
 ## Status
 
-Phases 1–8 done and pushed to `main`. Phases 9–10 pending.
+Phases 1–9 done and pushed to `main`. Phase 10 pending.
 
 | Phase | Status |
 | --- | --- |
@@ -14,7 +14,7 @@ Phases 1–8 done and pushed to `main`. Phases 9–10 pending.
 | 6 — Dark theme & typography | ✅ Done |
 | 7 — Predictions engine backend upgrades | ✅ Done |
 | 8 — Overview page rebuild (frontend) | ✅ Done |
-| 9 — Live stock prices (Finnhub) | ⏳ Pending |
+| 9 — Live stock prices (Finnhub) | ✅ Done |
 | 10 — Dedicated pages + sidebar restructure | ⏳ Pending |
 
 ## Context
@@ -446,7 +446,7 @@ new pure logic (e.g. band-fill path construction) is added.
 
 ## Phase 9 — Live stock prices (Finnhub)
 
-**Status: ⏳ Pending**
+**Status: ✅ Done**
 
 **Goal:** a read-only live-price overlay, isolated from the core ledger-derived data model.
 

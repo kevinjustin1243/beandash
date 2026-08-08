@@ -1,0 +1,101 @@
+[
+  {
+    "book_value": 50,
+    "cost_currency": "USD",
+    "currency": "ABC",
+    "market_value": null,
+    "price": null,
+    "units": 1,
+    "unrealized_profit_pct": -98.0
+  },
+  {
+    "book_value": 4899.98,
+    "cost_currency": "USD",
+    "currency": "GLD",
+    "market_value": 5045.92,
+    "price": 107.36,
+    "units": 47,
+    "unrealized_profit_pct": 2.9783795035898106
+  },
+  {
+    "book_value": null,
+    "cost_currency": null,
+    "currency": "IRAUSD",
+    "market_value": null,
+    "price": null,
+    "units": 7200.0,
+    "unrealized_profit_pct": 0
+  },
+  {
+    "book_value": 4972.52,
+    "cost_currency": "USD",
+    "currency": "ITOT",
+    "market_value": 5375.44,
+    "price": 92.68,
+    "units": 58,
+    "unrealized_profit_pct": 8.102933723745707
+  },
+  {
+    "book_value": 41670.00757,
+    "cost_currency": "USD",
+    "currency": "RGAGX",
+    "market_value": 51311.71216,
+    "price": 137.44,
+    "units": 373.339,
+    "unrealized_profit_pct": 23.138235753385057
+  },
+  {
+    "book_value": null,
+    "cost_currency": null,
+    "currency": "USD",
+    "market_value": null,
+    "price": null,
+    "units": -661.08,
+    "unrealized_profit_pct": 0
+  },
+  {
+    "book_value": null,
+    "cost_currency": null,
+    "currency": "VACHR",
+    "market_value": null,
+    "price": null,
+    "units": -82,
+    "unrealized_profit_pct": 0
+  },
+  {
+    "book_value": 27779.92083,
+    "cost_currency": "USD",
+    "currency": "VBMPX",
+    "market_value": 28139.56928,
+    "price": 30.08,
+    "units": 935.491,
+    "unrealized_profit_pct": 1.2946345391006646
+  },
+  {
+    "book_value": 7297.47,
+    "cost_currency": "USD",
+    "currency": "VEA",
+    "market_value": 7811.72,
+    "price": 84.91,
+    "units": 92,
+    "unrealized_profit_pct": 7.046962851508811
+  },
+  {
+    "book_value": 5325.81,
+    "cost_currency": "USD",
+    "currency": "VHT",
+    "market_value": 5304.25,
+    "price": 108.25,
+    "units": 49,
+    "unrealized_profit_pct": -0.40482105069463614
+  },
+  {
+    "book_value": 50,
+    "cost_currency": "USD",
+    "currency": "XYZ",
+    "market_value": 125,
+    "price": 125,
+    "units": 1,
+    "unrealized_profit_pct": 150.0
+  }
+]

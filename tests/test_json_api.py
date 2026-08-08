@@ -10,12 +10,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+import fava.json_api
 from fava.beans.funcs import hash_entry
 from fava.context import g
 from fava.core.file import get_entry_slice
 from fava.core.misc import align
 from fava.json_api import validate_func_arguments
 from fava.json_api import ValidationError
+from fava.util.live_prices import Quote
 
 if TYPE_CHECKING:  # pragma: no cover
     from flask import Flask
@@ -407,6 +409,56 @@ def test_api_uncategorized_transaction(
         assert data["entry"]["payee"] == "BANK FEES"
         assert data["suggestions"]
         assert data["suggestions"][0][0] == "Expenses:Financial:Fees"
+
+
+def test_api_holdings(
+    test_client: FlaskClient,
+    snapshot: SnapshotFunc,
+) -> None:
+    response = test_client.get("/long-example/api/holdings")
+    data = assert_api_success(response)
+    by_currency = {holding["currency"]: holding for holding in data}
+
+    # A holding with a recorded price: units/book/market value and percent
+    # gain are all populated.
+    itot = by_currency["ITOT"]
+    assert itot["cost_currency"] == "USD"
+    assert itot["price"] == 92.68
+    assert itot["market_value"] is not None
+
+    # ABC has cost basis but no recorded price for it, so market_value
+    # can't be computed - it should be omitted rather than shown as 0.
+    abc = by_currency["ABC"]
+    assert abc["price"] is None
+    assert abc["market_value"] is None
+    assert abc["book_value"] is not None
+
+    # USD itself is held directly (no cost basis / cost currency).
+    usd = by_currency["USD"]
+    assert usd["cost_currency"] is None
+    assert usd["book_value"] is None
+
+    snapshot(data, json=True)
+
+
+def test_api_live_prices(
+    test_client: FlaskClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_fetch_quotes(symbols: list[str]) -> dict[str, Quote]:
+        assert symbols == ["AAPL", "MSFT"]
+        return {"AAPL": Quote(price=210.0, day_change_pct=1.5, as_of=42)}
+
+    monkeypatch.setattr(fava.json_api, "fetch_quotes", fake_fetch_quotes)
+
+    response = test_client.get(
+        "/long-example/api/live_prices",
+        query_string={"tickers": "AAPL,MSFT"},
+    )
+    data = assert_api_success(response)
+    assert data == {
+        "AAPL": {"price": 210.0, "day_change_pct": 1.5, "as_of": 42},
+    }
 
 
 def test_api_payee_transaction(

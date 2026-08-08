@@ -45,7 +45,9 @@ from fava.core.forecast import PROJECTED_SUFFIX
 from fava.core.forecast import years_to_target
 from fava.core.group_entries import group_entries_by_type
 from fava.core.inventory import SimpleCounterInventory
+from fava.core.inventory import ZERO
 from fava.core.misc import align
+from fava.core.query import QueryResultTable
 from fava.helpers import FavaAPIError
 from fava.internal_api import BalancesChart
 from fava.internal_api import ChartApi
@@ -54,6 +56,7 @@ from fava.internal_api import get_ledger_data
 from fava.serialisation import deserialise
 from fava.serialisation import serialise
 from fava.util.date import Month
+from fava.util.live_prices import fetch_quotes
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Callable
@@ -67,11 +70,11 @@ if TYPE_CHECKING:  # pragma: no cover
     from fava.beans.abc import Directive
     from fava.core.charts import DateAndBalanceWithBudget
     from fava.core.insights import Insight
-    from fava.core.query import QueryResultTable
     from fava.core.query import QueryResultText
     from fava.core.tree import SerialisedTreeNode
     from fava.internal_api import ChartData
     from fava.util.date import DateRange
+    from fava.util.live_prices import Quote
 
 
 json_api = Blueprint("json_api", __name__)
@@ -921,6 +924,103 @@ def get_uncategorized_transaction() -> UncategorizedTransaction | None:
         placeholder_account=placeholder,
         suggestions=suggestions[:5],
     )
+
+
+HOLDINGS_QUERY = """
+SELECT
+  currency,
+  cost_currency,
+  units(sum(position)) as units,
+  first(getprice(currency, cost_currency)) as price,
+  cost(sum(position)) as book_value,
+  value(sum(position)) as market_value,
+  safediv(
+    (abs(sum(number(value(position)))) - abs(sum(number(cost(position))))),
+    sum(number(cost(position)))
+  ) * 100 as unrealized_profit_pct
+WHERE account_sortkey(account) ~ "^[01]"
+GROUP BY currency, cost_currency
+ORDER BY currency, cost_currency
+""".strip()
+
+
+@dataclass(frozen=True)
+class Holding:
+    """A single commodity holding, aggregated across accounts."""
+
+    currency: str
+    cost_currency: str | None
+    units: Decimal
+    price: Decimal | None
+    book_value: Decimal | None
+    market_value: Decimal | None
+    unrealized_profit_pct: Decimal
+
+
+def _as_inventory(value: object) -> SimpleCounterInventory:
+    assert isinstance(value, SimpleCounterInventory)  # noqa: S101
+    return value
+
+
+@api_endpoint
+def get_holdings() -> Sequence[Holding]:
+    """Get holdings aggregated by commodity, for the richer holdings table."""
+    g.ledger.changed()
+    result = g.ledger.query_shell.execute_query_serialised(
+        g.filtered.entries_with_all_prices, HOLDINGS_QUERY
+    )
+    assert isinstance(result, QueryResultTable)  # noqa: S101
+
+    holdings = []
+    for row in result.rows:
+        (
+            currency,
+            cost_currency,
+            units,
+            price,
+            book_value,
+            market_value,
+            pct,
+        ) = row
+        assert isinstance(currency, str)  # noqa: S101
+        assert isinstance(pct, Decimal)  # noqa: S101
+        cost_currency = (
+            cost_currency if isinstance(cost_currency, str) else None
+        )
+        units_inventory = _as_inventory(units)
+        book_inventory = _as_inventory(book_value)
+        market_inventory = _as_inventory(market_value)
+        holdings.append(
+            Holding(
+                currency=currency,
+                cost_currency=cost_currency,
+                units=units_inventory.get(currency, ZERO),
+                price=price if isinstance(price, Decimal) else None,
+                book_value=book_inventory.get(cost_currency, ZERO)
+                if cost_currency
+                else None,
+                # market_value is left as None (rather than defaulting to
+                # ZERO) when there's no recorded price to convert into the
+                # cost currency, so "no data" isn't shown as "worthless".
+                market_value=market_inventory.get(cost_currency)
+                if cost_currency
+                else None,
+                unrealized_profit_pct=pct,
+            ),
+        )
+    return holdings
+
+
+@api_endpoint
+def get_live_prices(tickers: str) -> Mapping[str, Quote]:
+    """Get live quotes for the given comma-separated ticker symbols.
+
+    Assumes the ledger's commodity codes match Finnhub ticker symbols.
+    Symbols Finnhub can't quote (or all of them, if FINNHUB_API_KEY is
+    unset) are simply omitted from the result rather than erroring.
+    """
+    symbols = [ticker for ticker in tickers.split(",") if ticker]
+    return fetch_quotes(symbols)
 
 
 @api_endpoint

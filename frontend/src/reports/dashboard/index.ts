@@ -1,12 +1,14 @@
 import {
   get_commodities,
   get_dashboard,
+  get_holdings,
   get_insights,
   get_predictions,
   get_uncategorized_transaction,
 } from "../../api/index.ts";
 import type {
   Commodities,
+  Holding,
   Insight,
   Predictions,
   UncategorizedTransaction,
@@ -30,6 +32,8 @@ export interface DashboardReportProps {
   insights: Insight[];
   predictions: Predictions;
   uncategorized: UncategorizedTransaction;
+  holdings: Holding[];
+  commodities: Commodities;
 }
 
 /**
@@ -91,14 +95,21 @@ export const dashboard = new Route<DashboardReportProps>(
   Dashboard,
   async (url) => {
     const filters = getURLFilters(url);
-    const [report, commodities, insights, predictions, uncategorized] =
-      await Promise.all([
-        get_dashboard(filters),
-        get_commodities(filters),
-        get_insights(filters),
-        get_predictions(filters),
-        get_uncategorized_transaction(),
-      ]);
+    const [
+      report,
+      commodities,
+      insights,
+      predictions,
+      uncategorized,
+      holdings,
+    ] = await Promise.all([
+      get_dashboard(filters),
+      get_commodities(filters),
+      get_insights(filters),
+      get_predictions(filters),
+      get_uncategorized_transaction(),
+      get_holdings(filters),
+    ]);
     const performance = performance_chart(commodities);
     const charts = performance
       ? [...report.charts, performance]
@@ -117,6 +128,8 @@ export const dashboard = new Route<DashboardReportProps>(
       insights,
       predictions,
       uncategorized,
+      holdings,
+      commodities,
     };
   },
   () => _("Dashboard"),

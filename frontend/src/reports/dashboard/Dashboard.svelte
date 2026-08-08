@@ -2,6 +2,7 @@
   import ChartSwitcher from "../../charts/ChartSwitcher.svelte";
   import { _, format } from "../../i18n.ts";
   import { ctx } from "../../stores/format.ts";
+  import HoldingsPreview from "./HoldingsPreview.svelte";
   import type { DashboardReportProps } from "./index.ts";
   import Suggester from "./Suggester.svelte";
 
@@ -14,6 +15,8 @@
     insights,
     predictions,
     uncategorized,
+    holdings,
+    commodities,
   }: DashboardReportProps = $props();
 </script>
 
@@ -70,6 +73,8 @@
   {#if uncategorized}
     <Suggester {uncategorized} />
   {/if}
+
+  <HoldingsPreview {holdings} {commodities} />
 
   {#if insights.length}
     <div class="card insights-card">

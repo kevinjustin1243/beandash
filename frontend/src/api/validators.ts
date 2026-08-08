@@ -186,6 +186,28 @@ export type UncategorizedTransaction = ValidationT<
   typeof uncategorized_transaction_validator
 >;
 
+export const holding_validator = object({
+  currency: string,
+  cost_currency: optional(string),
+  units: number,
+  price: optional(number),
+  book_value: optional(number),
+  market_value: optional(number),
+  unrealized_profit_pct: number,
+});
+
+export type Holding = ValidationT<typeof holding_validator>;
+
+export const quote_validator = object({
+  price: number,
+  day_change_pct: number,
+  as_of: number,
+});
+
+export type Quote = ValidationT<typeof quote_validator>;
+
+export const live_prices_validator = record(quote_validator);
+
 export const account_report_validator = object({
   charts: charts_validator,
   journal: optional(string),
