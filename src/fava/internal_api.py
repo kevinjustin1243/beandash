@@ -59,6 +59,7 @@ class LedgerData:
     base_url: str
     currencies: Sequence[str]
     currency_names: dict[str, str]
+    entries_count: int
     errors: Sequence[SerialisedError]
     fava_options: FavaOptions
     incognito: bool
@@ -107,6 +108,7 @@ def get_ledger_data() -> LedgerData:
         url_for("index"),
         ledger.attributes.currencies,
         ledger.commodities.names,
+        len(ledger.all_entries),
         get_errors(),
         ledger.fava_options,
         current_app.config["INCOGNITO"],

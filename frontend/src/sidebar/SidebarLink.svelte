@@ -17,10 +17,12 @@
     remote?: true;
     /** Show a bubble with a number */
     bubble?: [number, "error" | "info"];
+    /** Show a small status dot before the label, lit up when selected. */
+    dot?: boolean;
     children?: Snippet;
   }
 
-  let { report, name, key, remote, bubble, children }: Props = $props();
+  let { report, name, key, remote, bubble, dot, children }: Props = $props();
 
   let href = $derived(remote ? report : $urlFor(`${report}/`));
   let selected = $derived(remote ? false : href.includes($pathname));
@@ -28,6 +30,9 @@
 
 <li>
   <a class:selected {href} {@attach keyboardShortcut(key)} data-remote={remote}>
+    {#if dot}
+      <span class="status-dot" class:active={selected}></span>
+    {/if}
     {name}
     {#if bubble && bubble[0] > 0}
       <span class="bubble" class:error={bubble[1] === "error"}>
@@ -63,6 +68,20 @@
 
   li a:first-child {
     flex: 1;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 9px;
+    vertical-align: middle;
+    background-color: var(--border-darker);
+    border-radius: 50%;
+  }
+
+  .status-dot.active {
+    background-color: var(--green);
   }
 
   .bubble {

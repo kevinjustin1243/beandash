@@ -18,7 +18,7 @@ the app precisely to the design mockup and is not yet started.
 | 9 — Live stock prices (Finnhub) | ✅ Done |
 | 10 — Dedicated pages + sidebar restructure | ✅ Done |
 | 11 — Remove reports not in the design | ✅ Done |
-| 12 — Sidebar chrome (logo, status dots, footer) | ⏳ Pending |
+| 12 — Sidebar chrome (logo, status dots, footer) | ✅ Done |
 | 13 — Overview header (greeting, time pills) | ⏳ Pending |
 | 14 — Bespoke net worth chart | ⏳ Pending |
 | 15 — Allocation tile grid | ⏳ Pending |
@@ -691,6 +691,8 @@ sparklines still load (proving `get_commodities` survived).
 ---
 
 ## Phase 12 — Sidebar chrome (logo, status dots, footer)
+
+**Status: ✅ Done**
 
 **Goal:** the sidebar's non-navigation chrome from the mockup — brand mark, per-item status dots,
 and the bottom filename/live/entry-count block.

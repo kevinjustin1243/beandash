@@ -105,6 +105,7 @@ export const ledgerDataValidator = object({
   base_url: string,
   currencies: array(string),
   currency_names: record(string),
+  entries_count: number,
   errors: array(error_validator),
   extensions,
   fava_options,

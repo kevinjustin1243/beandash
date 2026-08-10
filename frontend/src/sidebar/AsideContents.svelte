@@ -1,6 +1,6 @@
 <script lang="ts">
   import { urlFor } from "../helpers.ts";
-  import { _ } from "../i18n.ts";
+  import { _, format } from "../i18n.ts";
   import { keyboardShortcut } from "../keyboard-shortcuts.ts";
   import { errors, extensions, ledgerData } from "../stores/index.ts";
   import AccountSelector from "./AccountSelector.svelte";
@@ -8,12 +8,23 @@
 
   const truncate = (s: string) => (s.length < 25 ? s : `${s.slice(25)}…`);
 
+  function basename(path: string): string {
+    return path.split(/[/\\]/).pop() ?? path;
+  }
+
   let user_queries = $derived($ledgerData.user_queries);
   let sidebar_links = $derived($ledgerData.sidebar_links);
   let extension_reports = $derived(
     $extensions.filter((e) => e.report_title != null),
   );
+  let filename = $derived(basename($ledgerData.options.filename));
+  let entries_count = $derived($ledgerData.entries_count);
 </script>
+
+<div class="brand">
+  <div class="brand-mark">b</div>
+  <div class="brand-name">Beandash</div>
+</div>
 
 {#if sidebar_links.length}
   <ul class="navigation">
@@ -24,10 +35,10 @@
 {/if}
 <div class="nav-group-label card-label">{_("Dashboards")}</div>
 <ul class="navigation">
-  <Link report="dashboard" name={_("Overview")} key="g D" />
-  <Link report="net_worth" name={_("Net worth")} key="g n" />
-  <Link report="holdings_live" name={_("Holdings")} key="g h" />
-  <Link report="predictions" name={_("Predictions")} key="g p" />
+  <Link report="dashboard" name={_("Overview")} key="g D" dot />
+  <Link report="net_worth" name={_("Net worth")} key="g n" dot />
+  <Link report="holdings_live" name={_("Holdings")} key="g h" dot />
+  <Link report="predictions" name={_("Predictions")} key="g p" dot />
 </ul>
 <div class="nav-group-label card-label">{_("Ledger")}</div>
 <ul class="navigation">
@@ -76,7 +87,96 @@
   </ul>
 {/if}
 
+<div class="sidebar-footer">
+  <div class="sidebar-footer-filename">{filename}</div>
+  <div class="sidebar-footer-status">
+    <span class="pulse-dot"></span>
+    <span>{_("Watching for changes")}</span>
+  </div>
+  <div class="sidebar-footer-counts">
+    {format(_("%(entries)s entries · %(errors)s errors"), {
+      entries: entries_count.toString(),
+      errors: $errors.length.toString(),
+    })}
+  </div>
+</div>
+
 <style>
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 0.5em 0.75em 1em;
+  }
+
+  .brand-mark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    font-family: var(--font-family-monospaced);
+    font-size: 14px;
+    font-weight: 600;
+    color: #06120d;
+    background: linear-gradient(150deg, var(--green), #2c9c78);
+    border-radius: 8px;
+  }
+
+  .brand-name {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .sidebar-footer {
+    padding: 0.75em 0.5em 0.5em 1em;
+    margin-top: 0.5rem;
+    font-size: 0.8em;
+    border-top: 1px solid var(--sidebar-border);
+  }
+
+  .sidebar-footer-filename {
+    overflow: hidden;
+    font-family: var(--font-family-monospaced);
+    color: var(--sidebar-color);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sidebar-footer-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding-top: 4px;
+    font-family: var(--font-family-monospaced);
+    color: var(--green);
+  }
+
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--green);
+    border-radius: 50%;
+    animation: sidebar-pulse 2s infinite;
+  }
+
+  .sidebar-footer-counts {
+    padding-top: 4px;
+    font-family: var(--font-family-monospaced);
+    color: var(--text-color-lightest);
+  }
+
+  @keyframes sidebar-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.25;
+    }
+  }
+
   .navigation {
     padding-bottom: 0.5rem;
     margin: 0;
