@@ -19,7 +19,7 @@ the app precisely to the design mockup and is not yet started.
 | 10 — Dedicated pages + sidebar restructure | ✅ Done |
 | 11 — Remove reports not in the design | ✅ Done |
 | 12 — Sidebar chrome (logo, status dots, footer) | ✅ Done |
-| 13 — Overview header (greeting, time pills) | ⏳ Pending |
+| 13 — Overview header (greeting, time pills) | ✅ Done |
 | 14 — Bespoke net worth chart | ⏳ Pending |
 | 15 — Allocation tile grid | ⏳ Pending |
 | 16 — Holdings table redesign | ⏳ Pending |
@@ -728,6 +728,8 @@ check`/`eslint`/build clean.
 ---
 
 ## Phase 13 — Overview header (greeting, time-range pills)
+
+**Status: ✅ Done**
 
 **Goal:** translate the mockup's page header — which is mockup-only content sitting *inside* the
 main content area, not Fava's actual global `<header>` bar (which holds the real time/account/tag

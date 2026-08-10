@@ -4,6 +4,7 @@
   import HoldingsPreview from "./HoldingsPreview.svelte";
   import type { DashboardReportProps } from "./index.ts";
   import NetWorthHero from "./NetWorthHero.svelte";
+  import OverviewHeader from "./OverviewHeader.svelte";
   import Suggester from "./Suggester.svelte";
 
   let {
@@ -21,6 +22,8 @@
 </script>
 
 <div class="dashboard-grid">
+  <OverviewHeader />
+
   <NetWorthHero
     {charts}
     {currency}
