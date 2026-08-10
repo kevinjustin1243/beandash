@@ -7,7 +7,6 @@ interface for asynchronous functionality.
 from __future__ import annotations
 
 import logging
-import shutil
 from abc import abstractmethod
 from dataclasses import dataclass
 from dataclasses import fields
@@ -27,14 +26,11 @@ from flask import jsonify
 from flask import request
 from flask_babel import gettext
 
-from fava.beans.abc import Document
-from fava.beans.abc import Event
 from fava.beans.funcs import hash_entry
 from fava.context import g
 from fava.core import EntryNotFoundForHashError
 from fava.core.charts import DateAndBalance
 from fava.core.conversion import AT_VALUE
-from fava.core.conversion import UNITS
 from fava.core.documents import filepath_in_document_folder
 from fava.core.documents import is_document_file
 from fava.core.file import GeneratedEntryError
@@ -43,7 +39,6 @@ from fava.core.filters import FilterError
 from fava.core.forecast import forecast
 from fava.core.forecast import PROJECTED_SUFFIX
 from fava.core.forecast import years_to_target
-from fava.core.group_entries import group_entries_by_type
 from fava.core.inventory import SimpleCounterInventory
 from fava.core.inventory import ZERO
 from fava.core.misc import align
@@ -183,15 +178,6 @@ class NotAValidDocumentFileError(FavaJSONAPIError):
 
     def __init__(self, filename: str) -> None:
         super().__init__(f"Not a valid document file: '{filename}'.")
-
-
-class NotAFileError(FavaJSONAPIError):
-    """Not a file."""
-
-    status = HTTPStatus.UNPROCESSABLE_ENTITY
-
-    def __init__(self, filename: str) -> None:
-        super().__init__(f"Not a file: '{filename}'")
 
 
 @json_api.errorhandler(FavaAPIError)
@@ -374,31 +360,6 @@ def get_source_slice(entry_hash: str) -> SourceSlice:
 
 
 @api_endpoint
-def put_move(account: str, new_name: str, filename: str) -> str:
-    """Move a document."""
-    if not g.ledger.options["documents"]:
-        raise DocumentDirectoryMissingError
-
-    new_path = filepath_in_document_folder(
-        g.ledger.options["documents"][0],
-        account,
-        new_name,
-        g.ledger,
-    )
-    file_path = Path(filename)
-
-    if not file_path.is_file():
-        raise NotAFileError(filename)
-    if new_path.exists():
-        raise TargetPathAlreadyExistsError(new_path)
-
-    new_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.move(filename, new_path)
-
-    return f"Moved {filename} to {new_path}."
-
-
-@api_endpoint
 def get_payee_transaction(payee: str) -> Any:
     """Last transaction for the given payee."""
     entry = g.ledger.attributes.payee_transaction(payee)
@@ -553,22 +514,6 @@ def get_journal_page(page: str, order: str) -> JournalPage:
         total_pages=journal_page.total_pages,
         journal=journal_table_contents(journal_page.entries),
     )
-
-
-@api_endpoint
-def get_events() -> Sequence[Event]:
-    """Get all (filtered) events."""
-    g.ledger.changed()
-    return [serialise(e) for e in g.filtered.entries if isinstance(e, Event)]
-
-
-@api_endpoint
-def get_documents() -> Sequence[Document]:
-    """Get all (filtered) documents."""
-    g.ledger.changed()
-    return [
-        serialise(e) for e in g.filtered.entries if isinstance(e, Document)
-    ]
 
 
 @dataclass(frozen=True)
@@ -1154,37 +1099,4 @@ def get_account_report() -> AccountReportJournal | AccountReportTree:
     return AccountReportJournal(
         charts,
         journal=journal_table_contents(entries, show_change_and_balance=True),
-    )
-
-
-@dataclass(frozen=True)
-class Statistics:
-    """Data for the statistics report."""
-
-    all_balance_directives: str
-    balances: Mapping[str, SimpleCounterInventory]
-    entries_by_type: Mapping[str, int]
-
-
-@api_endpoint
-def get_statistics() -> Statistics:
-    """Get the data for the statistics report."""
-    g.ledger.changed()
-
-    entries_by_type = {
-        type_: len(entries)
-        for type_, entries in group_entries_by_type(g.filtered.entries)
-        ._asdict()
-        .items()
-    }
-
-    balances = {
-        account_name: UNITS.apply(node.balance)
-        for account_name, node in g.filtered.root_tree.items()
-    }
-
-    return Statistics(
-        all_balance_directives=g.ledger.accounts.all_balance_directives(),
-        balances=balances,
-        entries_by_type=entries_by_type,
     )

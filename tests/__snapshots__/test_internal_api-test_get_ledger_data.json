@@ -734,7 +734,6 @@
     "show_metadata_indicators": true,
     "sidebar_show_queries": 5,
     "uncategorized_account": "Expenses:Uncategorized",
-    "upcoming_events": 7,
     "uptodate_indicator_grey_lookback_days": 60
   },
   "have_excel": true,
@@ -756,7 +755,6 @@
     ["Edit Example", "/edit-example/"],
     ["Example", "/example/"],
     ["Extension Report", "/extension-report/"],
-    ["move-example", "/move-example/"],
     ["Query Example", "/query-example/"],
     ["errors", "/errors/"],
     ["off-by-one", "/off-by-one/"],
@@ -822,7 +820,6 @@
     "trip-new-york-2016",
     "trip-san-francisco-2015"
   ],
-  "upcoming_events_count": 0,
   "user_queries": [
     {
       "date": "2016-01-01",

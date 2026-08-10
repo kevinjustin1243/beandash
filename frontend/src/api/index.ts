@@ -1,6 +1,7 @@
 import { get as store_get } from "svelte/store";
 
-import { Document, type Entry, Event, Transaction } from "../entries/index.ts";
+import type { Entry } from "../entries/index.ts";
+import { Transaction } from "../entries/index.ts";
 import type { NonEmptyArray } from "../lib/array.ts";
 import { fetch_json } from "../lib/fetch.ts";
 import type { Validator } from "../lib/validation.ts";
@@ -22,7 +23,6 @@ import {
   live_prices_validator,
   options_validator,
   predictions_validator,
-  statistics_validator,
   tree_report_validator,
   uncategorized_transaction_validator,
 } from "./validators.ts";
@@ -47,9 +47,7 @@ type GetEndpoint =
   | "commodities"
   | "context"
   | "dashboard"
-  | "documents"
   | "errors"
-  | "events"
   | "holdings"
   | "income_statement"
   | "insights"
@@ -64,7 +62,6 @@ type GetEndpoint =
   | "narrations"
   | "predictions"
   | "query"
-  | "statistics"
   | "suggest_accounts"
   | "uncategorized_transaction";
 type PutEndpoint =
@@ -72,7 +69,6 @@ type PutEndpoint =
   | "add_entries"
   | "attach_document"
   | "format_source"
-  | "move"
   | "source_slice";
 
 type ApiEndpoint = DeleteEndpoint | GetEndpoint | PutEndpoint;
@@ -245,19 +241,9 @@ export const get_dashboard = define_endpoint(
   dashboard_validator,
   filters_conversion_interval,
 );
-export const get_documents = define_endpoint(
-  "documents",
-  array(Document.validator),
-  filters,
-);
 export const get_errors = define_paramless_endpoint(
   "errors",
   array(error_validator),
-);
-export const get_events = define_endpoint(
-  "events",
-  array(Event.validator),
-  filters,
 );
 export const get_holdings = define_endpoint(
   "holdings",
@@ -325,11 +311,6 @@ export const get_source_slice = define_endpoint(
   object({ slice: string, sha256sum: string }),
   ["entry_hash"],
 );
-export const get_statistics = define_endpoint(
-  "statistics",
-  statistics_validator,
-  filters,
-);
 export const get_suggest_accounts = define_endpoint(
   "suggest_accounts",
   array(string),
@@ -358,38 +339,11 @@ export const put_attach_document: Put<{
 }> = define_put_json("attach_document");
 export const put_format_source: Put<{ source: string }> =
   define_put_json("format_source");
-const put_move: Put<{
-  filename: string;
-  account: string;
-  new_name: string;
-}> = define_put_json("move");
 export const put_source_slice: Put<{
   entry_hash: string;
   source: string;
   sha256sum: string;
 }> = define_put_json("source_slice");
-
-/**
- * Move a file, either in an import directory or a document.
- * @param filename - the current name of the file.
- * @param account - account to move the file to.
- * @param new_name - the new filename.
- * @returns whether the file was moved successfully.
- */
-export async function move_document(
-  filename: string,
-  account: string,
-  new_name: string,
-): Promise<boolean> {
-  try {
-    const msg = await put_move({ filename, account, new_name });
-    notify(msg);
-    return true;
-  } catch (error) {
-    notify_err(error);
-    return false;
-  }
-}
 
 /**
  * Delete a file, either in an import directory or a document.

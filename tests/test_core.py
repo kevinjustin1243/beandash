@@ -127,7 +127,6 @@ def test_account_balance_directive(example_ledger: FavaLedger) -> None:
         example_ledger.accounts["Assets:US:BofA:Checking"].balance_string
         == bal
     )
-    assert example_ledger.accounts.all_balance_directives() == bal
 
 
 def test_commodity_names(example_ledger: FavaLedger) -> None:

@@ -109,7 +109,6 @@ class FavaOptions:
     show_metadata_indicators: bool = True
     sidebar_show_queries: int = 5
     uncategorized_account: str = "Expenses:Uncategorized"
-    upcoming_events: int = 7
     uptodate_indicator_grey_lookback_days: int = 60
 
     def set_collapse_pattern(self, value: str) -> None:

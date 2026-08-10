@@ -86,7 +86,7 @@ def test_api_changed(test_client: FlaskClient) -> None:
     assert_api_success(response, data=False)
 
 
-def test_api_add_document_and_move_and_delete(
+def test_api_add_document_and_delete(
     app: Flask,
     test_client: FlaskClient,
     tmp_path: Path,
@@ -94,7 +94,6 @@ def test_api_add_document_and_move_and_delete(
 ) -> None:
     add_url = "/long-example/api/add_document"
     get_url = "/long-example/document/"
-    move_url = "/long-example/api/move"
     delete_url = "/long-example/api/document"
     account = "Expenses:Food:Restaurant"
     account_dir = tmp_path / "Expenses" / "Food" / "Restaurant"
@@ -152,32 +151,6 @@ def test_api_add_document_and_move_and_delete(
             response, f"{filename} already exists.", HTTPStatus.CONFLICT
         )
 
-        # move to same path should fail
-        response = test_client.put(
-            move_url,
-            json={
-                "account": account,
-                "filename": str(filename),
-                "new_name": "2015-12-12 test",
-            },
-        )
-        assert_api_error(
-            response, f"{filename} already exists.", HTTPStatus.CONFLICT
-        )
-
-        response = test_client.put(
-            move_url,
-            json={
-                "account": account,
-                "filename": str(filename),
-                "new_name": "2015-12-12 test_moved",
-            },
-        )
-        new_filename = account_dir / "2015-12-12 test_moved"
-        assert_api_success(response, f"Moved {filename} to {new_filename}.")
-        assert not filename.exists()
-        assert new_filename.exists()
-
         # delete
         invalid_filename = tmp_path.parent / "asdf"
         response = test_client.delete(
@@ -190,17 +163,18 @@ def test_api_add_document_and_move_and_delete(
             HTTPStatus.BAD_REQUEST,
         )
 
+        missing_filename = account_dir / "does-not-exist"
+        response = test_client.delete(
+            delete_url,
+            query_string={"filename": str(missing_filename)},
+        )
+        assert_api_error(response, f"{missing_filename} does not exist.")
+
         response = test_client.delete(
             delete_url,
             query_string={"filename": str(filename)},
         )
-        assert_api_error(response, f"{filename} does not exist.")
-
-        response = test_client.delete(
-            delete_url,
-            query_string={"filename": str(new_filename)},
-        )
-        assert_api_success(response, f"Deleted {new_filename}.")
+        assert_api_success(response, f"Deleted {filename}.")
 
 
 def test_api_errors(test_client: FlaskClient, snapshot: SnapshotFunc) -> None:
@@ -488,37 +462,6 @@ def test_api_narration_transaction(
     assert data["t"] == "Transaction"
 
 
-def test_api_move(test_client: FlaskClient) -> None:
-    response = test_client.put("/long-example/api/move")
-    assert_api_error(
-        response,
-        "Invalid API request: Invalid JSON body.",
-        HTTPStatus.BAD_REQUEST,
-    )
-
-    invalid = {"account": "Assets", "new_name": "new", "filename": "old"}
-    response = test_client.put("/long-example/api/move", json=invalid)
-    assert_api_error(
-        response,
-        "You need to set a documents folder.",
-        HTTPStatus.UNPROCESSABLE_ENTITY,
-    )
-
-    response = test_client.put("/move-example/api/move", json=invalid)
-    assert_api_error(response, "Not a valid account: 'Assets'")
-
-    response = test_client.put(
-        "/move-example/api/move",
-        json={
-            **invalid,
-            "account": "Assets:Checking",
-        },
-    )
-    assert_api_error(
-        response, "Not a file: 'old'", HTTPStatus.UNPROCESSABLE_ENTITY
-    )
-
-
 def test_api_get_source_slice_unprocessable(
     test_client: FlaskClient, get_ledger: GetFavaLedger
 ) -> None:
@@ -622,6 +565,13 @@ def test_api_format_source(
 ) -> None:
     path = Path(example_ledger.beancount_file_path)
     url = "/long-example/api/format_source"
+
+    response = test_client.put(url)
+    assert_api_error(
+        response,
+        "Invalid API request: Invalid JSON body.",
+        HTTPStatus.BAD_REQUEST,
+    )
 
     payload = path.read_text("utf-8")
 
@@ -852,8 +802,6 @@ def test_api_filter_error(
     ("name", "url"),
     [
         ("commodities", "/long-example/api/commodities"),
-        ("documents", "/example/api/documents"),
-        ("events", "/long-example/api/events"),
         ("journal", "/example/api/journal"),
         ("income_statement", "/long-example/api/income_statement?time=2014"),
         ("narrations", "/long-example/api/narrations"),
@@ -878,7 +826,6 @@ def test_api_filter_error(
                 "?interval=day&conversion=at_value&a=Assets&r=balances"
             ),
         ),
-        ("statistics", "/long-example/api/statistics"),
         ("options", "/long-example/api/options"),
     ],
 )

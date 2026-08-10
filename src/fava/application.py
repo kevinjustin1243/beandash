@@ -72,11 +72,8 @@ setup_logging()
 
 CLIENT_SIDE_REPORTS = [
     "balance_sheet",
-    "commodities",
     "dashboard",
-    "documents",
     "errors",
-    "events",
     "holdings",
     "holdings_live",
     "journal",
@@ -85,7 +82,6 @@ CLIENT_SIDE_REPORTS = [
     "options",
     "predictions",
     "query",
-    "statistics",
     "trial_balance",
 ]
 

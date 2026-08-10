@@ -19,6 +19,7 @@
 /src/fava/static/*.woff2
 /src/fava/translations/**/messages.mo
 /venv/
+/start.sh
 
 *.pyc
 *.so

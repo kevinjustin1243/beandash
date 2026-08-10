@@ -151,11 +151,3 @@ class AccountDict(FavaModule, dict[str, AccountData]):
                     )
         for close in self.ledger.all_entries_by_type.Close:
             self.setdefault(close.account).close_date = close.date
-
-    def all_balance_directives(self) -> str:
-        """Balance directives for all accounts."""
-        return "".join(
-            account_details.balance_string
-            for account_details in self.values()
-            if account_details.balance_string
-        )

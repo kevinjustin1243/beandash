@@ -59,23 +59,23 @@ def test_version() -> None:
 
 def test_client_side_reports(test_client: FlaskClient) -> None:
     """The client-side rendered reports are generated."""
-    response = test_client.get("/long-example/documents/")
-    documents_html = assert_success(response)
+    response = test_client.get("/long-example/journal/")
+    journal_html = assert_success(response)
 
     response = test_client.get("/long-example/account/Assets/")
-    assert documents_html == assert_success(response)
+    assert journal_html == assert_success(response)
 
     response = test_client.get("/long-example/holdings/by_account/")
-    assert documents_html == assert_success(response)
+    assert journal_html == assert_success(response)
 
     response = test_client.get("/long-example/holdings_live/")
-    assert documents_html == assert_success(response)
+    assert journal_html == assert_success(response)
 
     response = test_client.get("/long-example/net_worth/")
-    assert documents_html == assert_success(response)
+    assert journal_html == assert_success(response)
 
     response = test_client.get("/long-example/predictions/")
-    assert documents_html == assert_success(response)
+    assert journal_html == assert_success(response)
 
 
 def test_redirect(test_client: FlaskClient) -> None:

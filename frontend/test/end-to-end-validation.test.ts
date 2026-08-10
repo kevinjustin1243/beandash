@@ -56,8 +56,20 @@ test("validate ledger data", () => {
   deepEqual(store_get(chartContext).currencies, ["USD"]);
 });
 
-test("validate events", async () => {
-  const data = await loadJSONSnapshot("test_json_api-test_api-events.json");
+test("validate events", () => {
+  // No dedicated Events report/endpoint exists anymore, but Event entries
+  // still appear inline in the Journal, so `Event.validator` parsing must
+  // keep working - exercised here directly rather than via a report snapshot.
+  const data = [
+    {
+      t: "Event",
+      meta: {},
+      date: "2014-01-01",
+      entry_hash: "abc123",
+      type: "employer",
+      description: "BayBook, 1501 Billow Rd, Benlo Park, CA",
+    },
+  ];
   const res = array(Event.validator)(data);
   equal(res.unwrap()[0]?.type, "employer");
 });

@@ -14,8 +14,6 @@ import {
   string,
   tuple,
 } from "../lib/validation.ts";
-import { Inventory } from "../reports/query/query_table.ts";
-
 /** A Beancount error that should be shown to the user in the list of errors. */
 export interface BeancountError {
   readonly type: string;
@@ -119,7 +117,6 @@ export const ledgerDataValidator = object({
   precisions: record(number),
   sidebar_links: array(tuple(string, string)),
   tags: array(string),
-  upcoming_events_count: number,
   user_queries: array(object({ name: string, query_string: string })),
   years: array(string),
 });
@@ -214,12 +211,6 @@ export const account_report_validator = object({
   dates: optional(array(date_range)),
   interval_balances: optional(array(account_hierarchy_validator)),
   budgets: optional(record(array(account_budget))),
-});
-
-export const statistics_validator = object({
-  all_balance_directives: string,
-  entries_by_type: record(number),
-  balances: record(Inventory.validator),
 });
 
 export const options_validator = object({

@@ -70,7 +70,6 @@ class LedgerData:
     tags: Sequence[str]
     years: Sequence[str]
     user_queries: Sequence[Query]
-    upcoming_events_count: int
     extensions: Sequence[ExtensionDetails]
     sidebar_links: Sequence[tuple[str, str]]
     other_ledgers: Sequence[tuple[str, str]]
@@ -119,7 +118,6 @@ def get_ledger_data() -> LedgerData:
         ledger.attributes.tags,
         ledger.attributes.years,
         all_queries[: ledger.fava_options.sidebar_show_queries],
-        len(ledger.misc.upcoming_events),
         ledger.extensions.extension_details,
         ledger.misc.sidebar_links,
         [

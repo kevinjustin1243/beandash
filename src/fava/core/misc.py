@@ -8,13 +8,11 @@ from typing import TYPE_CHECKING
 
 from fava.core.module_base import FavaModule
 from fava.helpers import BeancountError
-from fava.util.date import local_today
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Sequence
 
     from fava.beans.abc import Custom
-    from fava.beans.abc import Event
     from fava.core import FavaLedger
 
     SidebarLinks = Sequence[tuple[str, str]]
@@ -38,17 +36,10 @@ class FavaMisc(FavaModule):
         super().__init__(ledger)
         #: User-chosen links to show in the sidebar.
         self.sidebar_links: SidebarLinks = []
-        #: Upcoming events in the next few days.
-        self.upcoming_events: Sequence[Event] = []
 
     def load_file(self) -> None:  # noqa: D102
         custom_entries = self.ledger.all_entries_by_type.Custom
         self.sidebar_links = sidebar_links(custom_entries)
-
-        self.upcoming_events = upcoming_events(
-            self.ledger.all_entries_by_type.Event,
-            self.ledger.fava_options.upcoming_events,
-        )
 
     @property
     def errors(self) -> Sequence[FavaError]:
@@ -74,30 +65,6 @@ def sidebar_links(custom_entries: Sequence[Custom]) -> SidebarLinks:
         (entry.values[0].value, entry.values[1].value)
         for entry in sidebar_link_entries
     ]
-
-
-def upcoming_events(
-    events: Sequence[Event], max_delta: int
-) -> Sequence[Event]:
-    """Parse entries for upcoming events.
-
-    Args:
-        events: A list of events.
-        max_delta: Number of days that should be considered.
-
-    Returns:
-        A list of the Events in entries that are less than `max_delta` days
-        away.
-    """
-    today = local_today()
-    upcoming = []
-
-    for event in events:
-        delta = event.date - today
-        if delta.days >= 0 and delta.days < max_delta:
-            upcoming.append(event)
-
-    return upcoming
 
 
 CURRENCY_RE = r"[A-Z][A-Z0-9\'\.\_\-]{0,22}[A-Z0-9]"

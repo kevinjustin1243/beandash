@@ -9,7 +9,6 @@
   const truncate = (s: string) => (s.length < 25 ? s : `${s.slice(25)}…`);
 
   let user_queries = $derived($ledgerData.user_queries);
-  let upcoming_events_count = $derived($ledgerData.upcoming_events_count);
   let sidebar_links = $derived($ledgerData.sidebar_links);
   let extension_reports = $derived(
     $extensions.filter((e) => e.report_title != null),
@@ -55,17 +54,6 @@
     {/if}
   </Link>
   <AccountSelector />
-</ul>
-<ul class="navigation">
-  <Link report="commodities" name={_("Commodities")} key="g c" />
-  <Link report="documents" name={_("Documents")} key="g d" />
-  <Link
-    report="events"
-    name={_("Events")}
-    key="g E"
-    bubble={[upcoming_events_count, "info"]}
-  />
-  <Link report="statistics" name={_("Statistics")} key="g s" />
 </ul>
 <ul class="navigation">
   {#if $errors.length > 0}
