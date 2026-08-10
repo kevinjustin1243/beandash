@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Predictions } from "../../api/validators.ts";
-  import ChartSwitcher from "../../charts/ChartSwitcher.svelte";
   import type { ParsedFavaChart } from "../../charts/index.ts";
   import { _ } from "../../i18n.ts";
   import { ctx } from "../../stores/format.ts";
+  import NetWorthChart from "./NetWorthChart.svelte";
 
   let {
     charts,
@@ -69,7 +69,7 @@
       </div>
     {/if}
   </div>
-  <ChartSwitcher {charts} />
+  <NetWorthChart {charts} {currency} />
 </div>
 
 <style>

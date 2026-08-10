@@ -5,10 +5,7 @@ import {
 } from "../../api/index.ts";
 import type { Commodities, Predictions } from "../../api/validators.ts";
 import type { ParsedFavaChart } from "../../charts/index.ts";
-import { LineChart, ParsedLineChart } from "../../charts/line.ts";
-import { domHelpers } from "../../charts/tooltip.ts";
-import { day } from "../../format.ts";
-import { _ } from "../../i18n.ts";
+import { ParsedLineChart } from "../../charts/line.ts";
 import type { FiltersConversionInterval } from "../../stores/filters.ts";
 
 export interface NetWorthHeroData {
@@ -20,34 +17,6 @@ export interface NetWorthHeroData {
   netWorthChange: number | null;
   predictions: Predictions;
   commodities: Commodities;
-}
-
-/**
- * Build a chart of the return (in percent, relative to the first known
- * price) of each commodity pair, so that holdings of different price
- * ranges can be compared on a single chart.
- */
-function performance_chart(commodities: Commodities): LineChart | null {
-  const series = commodities.flatMap(({ base, quote, prices }) => {
-    const start = prices[0]?.[1];
-    if (start == null || !start || prices.length < 2) {
-      return [];
-    }
-    const name = `${base} / ${quote}`;
-    const values = prices.map(([date, price]) => ({
-      name,
-      date,
-      value: ((price - start) / start) * 100,
-    }));
-    return [{ name, values }];
-  });
-  if (!series.length) {
-    return null;
-  }
-  return new LineChart(_("Performance"), series, (_c, d) => [
-    `${d.name}: ${d.value.toFixed(2)}%`,
-    domHelpers.em(day(d.date)),
-  ]);
 }
 
 /**
@@ -85,14 +54,12 @@ export async function load_net_worth_hero(
     get_commodities(filters),
     get_predictions(filters),
   ]);
-  const performance = performance_chart(commodities);
-  const charts = performance ? [...report.charts, performance] : report.charts;
   const { netWorth, netWorthChange } = net_worth_and_change(
-    charts,
+    report.charts,
     report.currency,
   );
   return {
-    charts,
+    charts: report.charts,
     date_range: report.date_range,
     currency: report.currency,
     unrealizedGain: report.unrealized_gain,

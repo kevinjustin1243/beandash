@@ -20,7 +20,7 @@ the app precisely to the design mockup and is not yet started.
 | 11 — Remove reports not in the design | ✅ Done |
 | 12 — Sidebar chrome (logo, status dots, footer) | ✅ Done |
 | 13 — Overview header (greeting, time pills) | ✅ Done |
-| 14 — Bespoke net worth chart | ⏳ Pending |
+| 14 — Bespoke net worth chart | ✅ Done |
 | 15 — Allocation tile grid | ⏳ Pending |
 | 16 — Holdings table redesign | ⏳ Pending |
 | 17 — Insights redesign | ⏳ Pending |
@@ -764,6 +764,8 @@ confirm error count in the header matches the Errors report, `svelte-check`/`esl
 ---
 
 ## Phase 14 — Bespoke net worth chart
+
+**Status: ✅ Done**
 
 **Goal:** a small new SVG component matching the mockup's net worth chart exactly, replacing
 `ChartSwitcher` in `NetWorthHero.svelte` (both the Overview card and the full `/net_worth/` page

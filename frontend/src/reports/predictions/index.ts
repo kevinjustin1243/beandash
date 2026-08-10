@@ -8,7 +8,8 @@ import PredictionsReport from "./PredictionsReport.svelte";
 
 export interface PredictionsReportProps {
   predictions: Predictions;
-  net_worth_chart: ParsedFavaChart | null;
+  charts: ParsedFavaChart[];
+  currency: string;
 }
 
 export const predictions = new Route<PredictionsReportProps>(
@@ -22,7 +23,8 @@ export const predictions = new Route<PredictionsReportProps>(
     ]);
     return {
       predictions: predictions_data,
-      net_worth_chart: report.charts[0] ?? null,
+      charts: report.charts,
+      currency: report.currency,
     };
   },
   () => _("Predictions"),
