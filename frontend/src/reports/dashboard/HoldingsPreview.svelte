@@ -165,14 +165,15 @@
                 ? $ctx.amount(price, cost_currency)
                 : "—"}
             </td>
-            <td
-              class="num"
-              class:stat-positive={quote != null && quote.day_change_pct >= 0}
-              class:stat-negative={quote != null && quote.day_change_pct < 0}
-            >
-              {quote != null
-                ? $ctx.percentage(quote.day_change_pct / 100)
-                : "—"}
+            <td class="num">
+              <span
+                class:stat-positive={quote != null && quote.day_change_pct >= 0}
+                class:stat-negative={quote != null && quote.day_change_pct < 0}
+              >
+                {quote != null
+                  ? $ctx.percentage(quote.day_change_pct / 100)
+                  : "—"}
+              </span>
             </td>
             <td class="holdings-sparkline">
               {#if points != null}
@@ -181,18 +182,19 @@
                 </svg>
               {/if}
             </td>
-            <td
-              class="num"
-              class:stat-positive={pl != null && pl >= 0}
-              class:stat-negative={pl != null && pl < 0}
-            >
-              <div>
-                {pl != null && cost_currency != null
-                  ? $ctx.amount(pl, cost_currency)
-                  : "—"}
-              </div>
-              <div class="holdings-pl-pct">
-                {$ctx.percentage(holding.unrealized_profit_pct / 100)}
+            <td class="num">
+              <div
+                class:stat-positive={pl != null && pl >= 0}
+                class:stat-negative={pl != null && pl < 0}
+              >
+                <div>
+                  {pl != null && cost_currency != null
+                    ? $ctx.amount(pl, cost_currency)
+                    : "—"}
+                </div>
+                <div class="holdings-pl-pct">
+                  {$ctx.percentage(holding.unrealized_profit_pct / 100)}
+                </div>
               </div>
             </td>
           </tr>
