@@ -35,7 +35,10 @@ export const error_validator = object<BeancountError>({
 export interface Insight {
   readonly type: "new_payee" | "unusual_transaction";
   readonly payee: string;
-  readonly message: string;
+  readonly title: string;
+  readonly detail: string;
+  readonly value: string;
+  readonly tone: string;
   readonly entry_hash: string;
 }
 
@@ -43,7 +46,10 @@ export interface Insight {
 export const insight_validator = object<Insight>({
   type: constants("new_payee", "unusual_transaction"),
   payee: string,
-  message: string,
+  title: string,
+  detail: string,
+  value: string,
+  tone: string,
   entry_hash: string,
 });
 

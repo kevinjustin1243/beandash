@@ -23,7 +23,7 @@ the app precisely to the design mockup and is not yet started.
 | 14 — Bespoke net worth chart | ✅ Done |
 | 15 — Allocation tile grid | ✅ Done |
 | 16 — Holdings table redesign | ✅ Done |
-| 17 — Insights redesign | ⏳ Pending |
+| 17 — Insights redesign | ✅ Done |
 | 18 — Suggester redesign | ⏳ Pending |
 | 19 — Forecast tiles redesign | ⏳ Pending |
 | 20 — Shared visual language on ledger reports | ⏳ Pending |
@@ -878,6 +878,8 @@ Phase 9's behavior).
 ---
 
 ## Phase 17 — Insights ("What changed") redesign
+
+**Status: ✅ Done**
 
 **Goal:** match the mockup's insight-card layout — colored left bar, title, detail line, and a
 right-aligned colored value badge — which needs `Insight` split into structured fields instead of

@@ -43,6 +43,10 @@ def test_new_payee_flagged_once() -> None:
     assert len(result) == 1
     assert result[0].type == "new_payee"
     assert result[0].payee == "Costco"
+    assert result[0].title == "New payee: Costco"
+    assert result[0].detail == "First seen 2020-01-01"
+    assert result[0].value == "new"
+    assert result[0].tone == "amber"
 
     # The later transaction for the same payee is not "new".
     result = module.insights([txns[1]])
@@ -99,6 +103,38 @@ def test_unusual_amount_flagged_even_with_zero_variance_baseline() -> None:
     result = module.insights([unusual])
     assert len(result) == 1
     assert result[0].type == "unusual_transaction"
+    assert result[0].title == "Unusual amount for Netflix"
+    assert result[0].detail == "500.00 vs. usual 15.00"
+    assert result[0].value == "+3233%"
+    assert result[0].tone == "red"
+
+
+def test_unusual_amount_below_mean_is_not_red() -> None:
+    # An amount lower than usual is still flagged, but is less urgent than
+    # one that's higher than usual - it gets the "amber" tone, not "red".
+    regular = [_txn(i, "Gym", "100") for i in range(1, 8)]
+    unusual = _txn(20, "Gym", "5")
+    module = InsightsModule(_FakeLedger([*regular, unusual]))  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
+    module.load_file()
+
+    result = module.insights([unusual])
+    assert len(result) == 1
+    assert result[0].tone == "amber"
+    assert result[0].value == "-95%"
+
+
+def test_unusual_amount_with_zero_baseline_mean() -> None:
+    # A payee whose baseline amount is always exactly 0 (e.g. symbolic
+    # postings) - guards the percent computation against dividing by a
+    # zero mean rather than crashing.
+    regular = [_txn(i, "Freebie", "0") for i in range(1, 8)]
+    unusual = _txn(20, "Freebie", "10")
+    module = InsightsModule(_FakeLedger([*regular, unusual]))  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
+    module.load_file()
+
+    result = module.insights([unusual])
+    assert len(result) == 1
+    assert result[0].value == "+0%"
 
 
 def test_no_transactions_or_payee() -> None:

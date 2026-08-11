@@ -334,12 +334,14 @@ def test_api_insights(test_client: FlaskClient) -> None:
     data = assert_api_success(response)
     assert data
     assert all(
-        item.keys() == {"type", "payee", "message", "entry_hash"}
+        item.keys()
+        == {"type", "payee", "title", "detail", "value", "tone", "entry_hash"}
         for item in data
     )
     assert all(
         item["type"] in {"new_payee", "unusual_transaction"} for item in data
     )
+    assert all(item["tone"] in {"amber", "red"} for item in data)
 
     # Narrowing to a period with no transactions at all: nothing flagged.
     response = test_client.get(

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { _ } from "../../i18n.ts";
   import AllocationGrid from "./AllocationGrid.svelte";
   import ForecastTiles from "./ForecastTiles.svelte";
   import HoldingsPreview from "./HoldingsPreview.svelte";
+  import InsightsPanel from "./InsightsPanel.svelte";
   import type { DashboardReportProps } from "./index.ts";
   import NetWorthHero from "./NetWorthHero.svelte";
   import OverviewHeader from "./OverviewHeader.svelte";
@@ -51,18 +51,7 @@
 
   <HoldingsPreview {holdingsReport} {commodities} />
 
-  {#if insights.length}
-    <div class="card insights-card">
-      <div class="card-label">{_("What changed")}</div>
-      <ul class="insights">
-        {#each insights as insight (insight.entry_hash)}
-          <li class={`insight insight-${insight.type}`}>
-            <a href={`#context-${insight.entry_hash}`}>{insight.message}</a>
-          </li>
-        {/each}
-      </ul>
-    </div>
-  {/if}
+  <InsightsPanel {insights} />
 
   <ForecastTiles {predictions} />
 </div>
@@ -85,24 +74,5 @@
     .hero-row {
       grid-template-columns: 1fr;
     }
-  }
-
-  .insights {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .insight {
-    padding: 0.4em 0 0.4em 0.75em;
-    border-left: 3px solid var(--border);
-  }
-
-  .insight-new_payee {
-    border-left-color: var(--accent-forecast);
-  }
-
-  .insight-unusual_transaction {
-    border-left-color: var(--warning);
   }
 </style>

@@ -83,7 +83,10 @@ class Insight:
 
     type: str
     payee: str
-    message: str
+    title: str
+    detail: str
+    value: str
+    tone: str
     entry_hash: str
 
 
@@ -148,10 +151,13 @@ class InsightsModule(FavaModule):
                 flagged_new_payees.add(payee)
                 found.append(
                     Insight(
-                        "new_payee",
-                        payee,
-                        f"New payee: {payee}",
-                        hash_entry(entry),
+                        type="new_payee",
+                        payee=payee,
+                        title=f"New payee: {payee}",
+                        detail=f"First seen {entry.date}",
+                        value="new",
+                        tone="amber",
+                        entry_hash=hash_entry(entry),
                     ),
                 )
                 continue
@@ -169,13 +175,16 @@ class InsightsModule(FavaModule):
                 else abs(amount - mean) / stdev > ZSCORE_THRESHOLD
             )
             if is_unusual:
+                pct = (amount / mean - 1) * 100 if mean else 0.0
                 found.append(
                     Insight(
-                        "unusual_transaction",
-                        payee,
-                        f"Unusual amount for {payee}: {amount:.2f} "
-                        f"(usually around {mean:.2f})",
-                        hash_entry(entry),
+                        type="unusual_transaction",
+                        payee=payee,
+                        title=f"Unusual amount for {payee}",
+                        detail=f"{amount:.2f} vs. usual {mean:.2f}",
+                        value=f"{pct:+.0f}%",
+                        tone="red" if amount > mean else "amber",
+                        entry_hash=hash_entry(entry),
                     ),
                 )
         return found
