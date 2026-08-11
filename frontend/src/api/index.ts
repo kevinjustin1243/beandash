@@ -17,6 +17,7 @@ import {
   context_validator,
   dashboard_validator,
   error_validator,
+  goal_progress_validator,
   holdings_report_validator,
   insight_validator,
   ledgerDataValidator,
@@ -48,6 +49,7 @@ type GetEndpoint =
   | "context"
   | "dashboard"
   | "errors"
+  | "goals"
   | "holdings"
   | "income_statement"
   | "insights"
@@ -324,6 +326,10 @@ export const get_trial_balance = define_endpoint(
 export const get_uncategorized_transaction = define_paramless_endpoint(
   "uncategorized_transaction",
   uncategorized_transaction_validator,
+);
+export const get_goals = define_paramless_endpoint(
+  "goals",
+  array(goal_progress_validator),
 );
 
 type Put<T> = (body: T) => Promise<string>;

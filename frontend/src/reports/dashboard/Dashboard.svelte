@@ -1,6 +1,7 @@
 <script lang="ts">
   import AllocationGrid from "./AllocationGrid.svelte";
   import ForecastTiles from "./ForecastTiles.svelte";
+  import GoalsSummary from "./GoalsSummary.svelte";
   import HoldingsPreview from "./HoldingsPreview.svelte";
   import InsightsPanel from "./InsightsPanel.svelte";
   import type { DashboardReportProps } from "./index.ts";
@@ -21,6 +22,7 @@
     commodities,
     allocation,
     liquidCash,
+    goals,
   }: DashboardReportProps = $props();
 </script>
 
@@ -47,6 +49,8 @@
   {#if uncategorized}
     <Suggester {uncategorized} />
   {/if}
+
+  <GoalsSummary {goals} />
 
   <HoldingsPreview {holdingsReport} {commodities} />
 

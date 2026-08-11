@@ -196,6 +196,8 @@ def test_help_pages(test_client: FlaskClient) -> None:
     assert f"<code>{version('beancount')}</code>" in help_page
     response = test_client.get("/long-example/help/filters")
     assert assert_success(response)
+    response = test_client.get("/long-example/help/goals")
+    assert assert_success(response)
     response = test_client.get("/long-example/help/asdfasdf")
     assert response.status_code == HTTPStatus.NOT_FOUND.value
 

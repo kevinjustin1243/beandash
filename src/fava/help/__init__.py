@@ -5,6 +5,7 @@ from __future__ import annotations
 HELP_PAGES = {
     "_index": "Index",
     "budgets": "Budgets",
+    "goals": "Goals",
     "conversion": "Conversion",
     "options": "Options",
     "beancount_syntax": "Beancount Syntax",

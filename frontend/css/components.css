@@ -52,6 +52,61 @@ and any other panel-based layout.
   color: var(--warning);
 }
 
+/*
+Shared meter-bar building blocks (a thin progress bar + a right-aligned
+delta figure + a small note line below), used by the dashboard's forecast
+tiles and the Goals report's per-goal progress.
+*/
+
+.tile-meter {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  margin-top: 0.6em;
+}
+
+.tile-meter-bar {
+  flex: 1 1 auto;
+  height: 4px;
+  overflow: hidden;
+  background-color: var(--border);
+  border-radius: 4px;
+}
+
+.tile-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.tile-meter-forecast {
+  background-color: var(--accent-forecast);
+}
+
+.tile-meter-warning {
+  background-color: var(--warning);
+}
+
+.tile-meter-positive {
+  background-color: var(--green);
+}
+
+.tile-meter-negative {
+  background-color: var(--red);
+}
+
+.tile-delta {
+  flex: none;
+  font-family: var(--font-family-monospaced);
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+.tile-note {
+  margin-top: 0.4em;
+  font-size: 0.75em;
+}
+
 details {
   display: block;
   min-width: 400px;

@@ -5,6 +5,7 @@ pages for the following topics:
 
 - [Beancount Syntax](./beancount_syntax) - short overview of the syntax.
 - [Budgets](./budgets) - how to use Fava's budgeting feature.
+- [Goals](./goals) - how to set savings and payoff goals.
 - [Fava's Features](./features) - the features in detail.
 - [Filtering entries](./filters) - how to filter the entries.
 - [Extensions](./extensions) - how Fava can be extended.

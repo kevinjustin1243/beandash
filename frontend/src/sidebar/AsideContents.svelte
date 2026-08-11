@@ -39,6 +39,7 @@
   <Link report="net_worth" name={_("Net worth")} key="g n" dot />
   <Link report="holdings_live" name={_("Holdings")} key="g h" dot />
   <Link report="predictions" name={_("Predictions")} key="g p" dot />
+  <Link report="goals" name={_("Goals")} key="g g" dot />
 </ul>
 <div class="nav-group-label card-label">{_("Ledger")}</div>
 <ul class="navigation">

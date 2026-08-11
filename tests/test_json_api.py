@@ -383,6 +383,75 @@ def test_api_predictions(test_client: FlaskClient) -> None:
     assert data["net_worth_monthly_change"] is None
 
 
+def test_api_goals(test_client: FlaskClient) -> None:
+    response = test_client.get("/long-example/api/goals")
+    data = assert_api_success(response)
+    assert len(data) == 4
+    by_label = {goal["label"]: goal for goal in data}
+
+    assert by_label.keys() == {
+        "Emergency fund",
+        "Pay off Slate card",
+        "Brokerage cash",
+        "Someday fund",
+    }
+    for goal in data:
+        assert goal.keys() == {
+            "account",
+            "label",
+            "target",
+            "currency",
+            "target_date",
+            "balance",
+            "pct_complete",
+            "is_payoff",
+            "eta_years",
+            "on_track",
+        }
+
+    # A savings goal: balance / target, straightforwardly.
+    savings = by_label["Emergency fund"]
+    assert savings["account"] == "Assets:US:BofA:Checking"
+    assert savings["is_payoff"] is False
+    assert savings["target"] == 5000.0
+    assert savings["balance"] == 1632.79
+    assert savings["pct_complete"] == pytest.approx(1632.79 / 5000)
+    # The account's recent trend isn't headed toward the target, so there's
+    # no ETA - and therefore nothing to call "on track".
+    assert savings["eta_years"] is None
+    assert savings["on_track"] is False
+
+    # A payoff goal against a liability: Chase:Slate's debt has actually
+    # grown since the goal's declared date in this fixture (a revolving
+    # card, not a loan being paid down), so progress is clamped at 0%
+    # rather than going negative.
+    payoff = by_label["Pay off Slate card"]
+    assert payoff["account"] == "Liabilities:US:Chase:Slate"
+    assert payoff["is_payoff"] is True
+    assert payoff["target"] == 0.0
+    assert payoff["balance"] == 2935.65
+    assert payoff["pct_complete"] == 0.0
+
+    # A savings goal whose account has a genuine favourable trend gets a
+    # real ETA, and is "on track" since that ETA lands before the target
+    # date.
+    on_track_goal = by_label["Brokerage cash"]
+    assert on_track_goal["account"] == "Assets:US:ETrade:Cash"
+    assert on_track_goal["eta_years"] == pytest.approx(0.7939889675879936)
+    assert on_track_goal["on_track"] is True
+
+    # A goal with no target date has nothing to be "on track" against -
+    # progress is still shown, just no ETA verdict.
+    no_date_goal = by_label["Someday fund"]
+    assert no_date_goal["target_date"] is None
+    assert no_date_goal["on_track"] is None
+
+    # A ledger with no `custom "goal"` directives returns an empty list,
+    # not an error.
+    response = test_client.get("/example/api/goals")
+    assert_api_success(response, [])
+
+
 def test_api_uncategorized_transaction(
     test_client: FlaskClient,
     app: Flask,

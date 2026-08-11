@@ -28,7 +28,7 @@ requested but not yet started — no mockup exists for either.
 | 18 — Suggester redesign | ✅ Done |
 | 19 — Forecast tiles redesign | ✅ Done |
 | 20 — Shared visual language on ledger reports | ✅ Done |
-| 21 — Goals | ⏳ Pending |
+| 21 — Goals | ✅ Done |
 | 22 — Budgets | ⏳ Pending |
 
 ## Context
@@ -1050,6 +1050,32 @@ Reusable machinery both phases should lean on rather than reinvent:
 ---
 
 ## Phase 21 — Goals
+
+**Status: ✅ Done.** Built with the plan's proposed `custom "goal" <account> <label> <target>
+[<target date>]` shape (no check-in needed before building — went ahead and built it, then
+verified thoroughly, per how Phase 11/14's "check in after" checkpoints worked in Part 3).
+Notable decisions made while implementing, worth confirming:
+- Goals compute against the **unfiltered** ledger (`g.ledger.get_filtered()`), not `g.filtered` -
+  they show all-time progress toward a personal target, so a `time`/`account`/`filter` URL param
+  set for an unrelated report doesn't change what a goal shows.
+- Payoff-goal progress and its ETA fit are both normalised around "how much of the balance at
+  declaration time has moved toward the target" (reusing the account's own `linechart` series via
+  `ChartModule.linechart`), not the raw balance - this was necessary to get right: an initial
+  version divided by the raw target (usually `0.00`, for "fully paid off"), which meant `pct_complete`
+  was `None` for every "pay this down to zero" goal, exactly the bug the plan flagged as a risk.
+  Caught by testing against real ledger data before committing to the formula, not by inspection.
+- ETA math anchors to the account's own last data point (matching `forecast.py`'s convention),
+  not wall-clock `date.today()` - keeps it correct against a ledger whose data doesn't reach the
+  present, and consistent with how every other forecast in this app already works.
+- The Phase 19 meter-bar CSS (`.tile-meter*`/`.tile-delta`/`.tile-note`) moved from
+  `ForecastTiles.svelte`'s scoped styles into `components.css`, since Goals is the second
+  consumer - exactly the trigger the Phase 19 plan text called for.
+- Test fixtures: 4 `custom "goal"` directives were added to `tests/data/long-example.beancount`
+  (a savings goal behind schedule, a payoff goal, an on-track savings goal, and a no-target-date
+  goal) to exercise the endpoint end-to-end rather than only via synthetic unit tests, per the
+  plan. This shifted several hardcoded total-entry-count assertions in `test_core_filters.py` and
+  the `test_get_ledger_data` snapshot - expected and already fixed, flagging here since it's a
+  recurring gotcha whenever `long-example.beancount` gains entries.
 
 **Goal:** savings/payoff goals with progress and a projected completion date — "House fund:
 32,400 of 50,000 (65%), on track for Mar 2027 at the current rate".

@@ -1,4 +1,5 @@
 import {
+  get_goals,
   get_holdings,
   get_insights,
   get_uncategorized_transaction,
@@ -6,6 +7,7 @@ import {
 import type {
   AllocationEntry,
   Commodities,
+  GoalProgress,
   HoldingsReport,
   Insight,
   Predictions,
@@ -32,6 +34,7 @@ export interface DashboardReportProps {
   commodities: Commodities;
   allocation: AllocationEntry[];
   liquidCash: number;
+  goals: GoalProgress[];
 }
 
 export const dashboard = new Route<DashboardReportProps>(
@@ -39,17 +42,20 @@ export const dashboard = new Route<DashboardReportProps>(
   Dashboard,
   async (url) => {
     const filters = getURLFilters(url);
-    const [hero, insights, uncategorized, holdingsReport] = await Promise.all([
-      load_net_worth_hero(filters),
-      get_insights(filters),
-      get_uncategorized_transaction(),
-      get_holdings(filters),
-    ]);
+    const [hero, insights, uncategorized, holdingsReport, goals] =
+      await Promise.all([
+        load_net_worth_hero(filters),
+        get_insights(filters),
+        get_uncategorized_transaction(),
+        get_holdings(filters),
+        get_goals(),
+      ]);
     return {
       ...hero,
       insights,
       uncategorized,
       holdingsReport,
+      goals,
     };
   },
   () => _("Dashboard"),

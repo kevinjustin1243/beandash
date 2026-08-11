@@ -190,6 +190,21 @@ export const predictions_validator = object({
 
 export type Predictions = ValidationT<typeof predictions_validator>;
 
+export const goal_progress_validator = object({
+  account: string,
+  label: string,
+  target: number,
+  currency: string,
+  target_date: optional(date),
+  balance: number,
+  pct_complete: optional(number),
+  is_payoff: boolean,
+  eta_years: optional(number),
+  on_track: optional(boolean),
+});
+
+export type GoalProgress = ValidationT<typeof goal_progress_validator>;
+
 export const uncategorized_transaction_validator = optional(
   object({
     entry: entryValidator,

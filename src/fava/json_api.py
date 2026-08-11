@@ -10,6 +10,7 @@ import logging
 from abc import abstractmethod
 from dataclasses import dataclass
 from dataclasses import fields
+from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
 from http import HTTPStatus
@@ -31,11 +32,13 @@ from fava.context import g
 from fava.core import EntryNotFoundForHashError
 from fava.core.charts import DateAndBalance
 from fava.core.conversion import AT_VALUE
+from fava.core.conversion import conversion_from_str
 from fava.core.documents import filepath_in_document_folder
 from fava.core.documents import is_document_file
 from fava.core.file import GeneratedEntryError
 from fava.core.file import get_entry_slice
 from fava.core.filters import FilterError
+from fava.core.forecast import fit_currencies
 from fava.core.forecast import forecast
 from fava.core.forecast import PROJECTED_SUFFIX
 from fava.core.forecast import years_to_target
@@ -63,7 +66,9 @@ if TYPE_CHECKING:  # pragma: no cover
     from flask.wrappers import Response
 
     from fava.beans.abc import Directive
+    from fava.core import FilteredLedger
     from fava.core.charts import DateAndBalanceWithBudget
+    from fava.core.goals import Goal
     from fava.core.insights import Insight
     from fava.core.query import QueryResultText
     from fava.core.tree import SerialisedTreeNode
@@ -906,6 +911,170 @@ def get_predictions() -> Predictions:
         fi_target=fi_target,
         fi_years=fi_years,
     )
+
+
+@dataclass(frozen=True)
+class GoalProgress:
+    """A goal, with its progress computed against the ledger's data."""
+
+    account: str
+    label: str
+    target: Decimal
+    currency: str
+    target_date: date | None
+    balance: Decimal
+    pct_complete: float | None
+    is_payoff: bool
+    eta_years: float | None
+    on_track: bool | None
+
+
+def _goal_balance(
+    full: FilteredLedger,
+    account: str,
+    currency: str,
+) -> Decimal:
+    """Current balance of `account`, converted to `currency`.
+
+    `Tree.get()` always returns a `TreeNode` (an empty one, if `account`
+    has no postings), so there is no missing-account case to guard here.
+    """
+    node = full.root_tree.get(account)
+    conversion = conversion_from_str(currency)
+    value = conversion.apply(
+        node.balance_children, full.ledger.prices, full.end_date
+    )
+    return value.get(currency, ZERO)
+
+
+def _progress_value(
+    *,
+    is_payoff: bool,
+    starting_debt: Decimal,
+    raw_balance: Decimal,
+) -> Decimal:
+    """A value that increases toward the target, for both goal kinds.
+
+    A savings goal's own balance already increases toward its target. A
+    payoff goal's balance decreases (toward zero or some remaining-debt
+    target), so it is reframed as "how much of the starting debt has been
+    paid off" instead, which increases the same way a savings goal does -
+    letting both share the same fit/ETA logic below.
+    """
+    return starting_debt - abs(raw_balance) if is_payoff else raw_balance
+
+
+def _goal_progress(
+    full: FilteredLedger,
+    goal: Goal,
+) -> GoalProgress:
+    """Compute a goal's current balance, progress, and (if on track) ETA.
+
+    Deliberately uses the *unfiltered* ledger (`full`, i.e.
+    `g.ledger.get_filtered()`) rather than the request's `g.filtered` -
+    goals describe all-time progress toward a personal target, not a
+    narrowed reporting period, so they should not move just because a
+    `time`/`account`/`filter` URL param is set for an unrelated report.
+    """
+    is_payoff = goal.account.startswith(
+        full.ledger.options["name_liabilities"]
+    )
+    raw_balance = _goal_balance(full, goal.account, goal.currency)
+    series = list(
+        full.ledger.charts.linechart(full, goal.account, goal.currency),
+    )
+
+    starting_debt = ZERO
+    if is_payoff:
+        starting_debt = abs(
+            next(
+                (
+                    point.balance.get(goal.currency, ZERO)
+                    for point in reversed(series)
+                    if point.date <= goal.date
+                ),
+                ZERO,
+            ),
+        )
+
+    display_balance = abs(raw_balance) if is_payoff else raw_balance
+    display_target = abs(goal.target) if is_payoff else goal.target
+
+    # `current_progress`/`target_progress` are normalised so *both* goal
+    # kinds increase from 0 toward `target_progress` - for a payoff goal
+    # this is "how much of the starting debt has been paid off", not the
+    # raw balance, so a goal like "pay this down to $0" (the common case)
+    # doesn't divide by a target of zero. `pct_complete` and the ETA fit
+    # below both use this same normalised value, not the raw balance.
+    current_progress = _progress_value(
+        is_payoff=is_payoff,
+        starting_debt=starting_debt,
+        raw_balance=raw_balance,
+    )
+    target_progress = (
+        starting_debt - display_target if is_payoff else goal.target
+    )
+    pct_complete = (
+        max(0.0, float(current_progress / target_progress))
+        if target_progress
+        else None
+    )
+
+    progress_series = [
+        DateAndBalance(
+            point.date,
+            SimpleCounterInventory(
+                {
+                    goal.currency: _progress_value(
+                        is_payoff=is_payoff,
+                        starting_debt=starting_debt,
+                        raw_balance=point.balance.get(goal.currency, ZERO),
+                    ),
+                },
+            ),
+        )
+        for point in series
+    ]
+    fit = fit_currencies(progress_series).get(goal.currency)
+    eta_years = (
+        years_to_target(
+            float(current_progress),
+            fit.slope,
+            float(target_progress),
+        )
+        if fit is not None
+        else None
+    )
+
+    on_track = None
+    if goal.target_date is not None:
+        if eta_years is None:
+            on_track = False
+        else:
+            last_date = series[-1].date if series else goal.date
+            eta_date = last_date + timedelta(days=round(eta_years * 365))
+            on_track = eta_date <= goal.target_date
+
+    return GoalProgress(
+        account=goal.account,
+        label=goal.label,
+        target=display_target,
+        currency=goal.currency,
+        target_date=goal.target_date,
+        balance=display_balance,
+        pct_complete=pct_complete,
+        is_payoff=is_payoff,
+        eta_years=eta_years,
+        on_track=on_track,
+    )
+
+
+@api_endpoint
+def get_goals() -> Sequence[GoalProgress]:
+    """Get progress for each goal declared via a `custom "goal"` directive."""
+    g.ledger.changed()
+    full = g.ledger.get_filtered()
+    return [_goal_progress(full, goal) for goal in g.ledger.goals.goals]
 
 
 @dataclass(frozen=True)

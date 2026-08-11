@@ -39,6 +39,7 @@ from fava.core.file import FileModule
 from fava.core.filters import AccountFilter
 from fava.core.filters import AdvancedFilter
 from fava.core.filters import TimeFilter
+from fava.core.goals import GoalsModule
 from fava.core.group_entries import group_entries_by_type
 from fava.core.insights import InsightsModule
 from fava.core.inventory import CounterInventory
@@ -313,6 +314,7 @@ class FavaLedger:
         "format_decimal",
         "get_entry",
         "get_filtered",
+        "goals",
         "insights",
         "load_errors",
         "misc",
@@ -401,6 +403,7 @@ class FavaLedger:
         self.extensions = ExtensionModule(self)
         self.file = FileModule(self)
         self.format_decimal = DecimalFormatModule(self)
+        self.goals = GoalsModule(self)
         self.insights = InsightsModule(self)
         self.misc = FavaMisc(self)
         self.query_shell = QueryShell(self)
@@ -440,6 +443,7 @@ class FavaLedger:
         self.extensions.load_file()
         self.file.load_file()
         self.format_decimal.load_file()
+        self.goals.load_file()
         self.insights.load_file()
         self.misc.load_file()
         self.query_shell.load_file()
@@ -477,6 +481,7 @@ class FavaLedger:
             *self.fava_options_errors,
             *self.budgets.errors,
             *self.extensions.errors,
+            *self.goals.errors,
             *self.misc.errors,
         ]
 

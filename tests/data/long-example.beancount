@@ -5821,5 +5821,10 @@ option "operating_currency" "USD"
 
 2000-01-03 price XYZ                                  125 USD
 
+2015-01-01 custom "goal" Assets:US:BofA:Checking "Emergency fund" 5000.00 USD 2020-01-01
+2015-01-01 custom "goal" Liabilities:US:Chase:Slate "Pay off Slate card" 0.00 USD 2018-01-01
+2015-06-01 custom "goal" Assets:US:ETrade:Cash "Brokerage cash" 1000.00 USD 2018-01-01
+2015-01-01 custom "goal" Assets:US:Vanguard:Cash "Someday fund" 200.00 USD
+
 * Cash
 

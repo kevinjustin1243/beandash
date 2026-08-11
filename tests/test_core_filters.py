@@ -134,13 +134,13 @@ def test_filterexception() -> None:
     ("string", "number"),
     [
         ('any(account:"Assets:US:ETrade")', 48),
-        ('all(-account:"Assets:US:ETrade")', 1826 - 48),
+        ('all(-account:"Assets:US:ETrade")', 1830 - 48),
         ("#test", 2),
         ("#test,#nomatch", 2),
-        ("-#nomatch", 1826),
-        ("-#nomatch -#nomatch", 1826),
-        ("-#nomatch -#test", 1824),
-        ("-#test", 1824),
+        ("-#nomatch", 1830),
+        ("-#nomatch -#nomatch", 1830),
+        ("-#nomatch -#test", 1828),
+        ("-#test", 1828),
         ("^test-link", 3),
         ("^test-link,#test", 4),
         ("^test-link -#test", 2),
@@ -196,7 +196,7 @@ def test_account_filter(example_ledger: FavaLedger) -> None:
 
     account_filter = AccountFilter("Assets")
     filtered_entries = account_filter.apply(example_ledger.all_entries)
-    assert len(filtered_entries) == 541
+    assert len(filtered_entries) == 544
     for entry in filtered_entries:
         assert any(
             has_component(a, "Assets") for a in get_entry_accounts(entry)

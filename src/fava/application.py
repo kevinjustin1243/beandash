@@ -74,6 +74,7 @@ CLIENT_SIDE_REPORTS = [
     "balance_sheet",
     "dashboard",
     "errors",
+    "goals",
     "holdings_live",
     "journal",
     "income_statement",
