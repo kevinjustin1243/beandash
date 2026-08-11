@@ -179,6 +179,7 @@ export const predictions_validator = object({
   net_worth: number,
   net_worth_projected: number,
   net_worth_r_squared: number,
+  net_worth_monthly_change: optional(number),
   savings_rate: optional(number),
   spend_next_period: optional(number),
   spend_trailing_monthly: number,

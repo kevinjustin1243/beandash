@@ -25,7 +25,7 @@ the app precisely to the design mockup and is not yet started.
 | 16 — Holdings table redesign | ✅ Done |
 | 17 — Insights redesign | ✅ Done |
 | 18 — Suggester redesign | ✅ Done |
-| 19 — Forecast tiles redesign | ⏳ Pending |
+| 19 — Forecast tiles redesign | ✅ Done |
 | 20 — Shared visual language on ledger reports | ⏳ Pending |
 
 ## Context
@@ -938,6 +938,12 @@ Phase 8's tested flow), `svelte-check`/`eslint`/build clean.
 ---
 
 ## Phase 19 — Forecast tiles redesign
+
+**Status: ✅ Done** (meter/badge semantics chosen deliberately rather than copying the mockup's
+fixed per-tile colors: net worth's badge is signed and colored by actual direction, cash flow's
+meter+badge share one color reflecting its real sign, FI target's badge shows real progress-to-
+target instead of a fabricated period-over-period delta — no persisted-snapshot infra exists to
+compute a genuine "vs. last time" delta.)
 
 **Goal:** add the mockup's per-tile progress-meter bar, delta badge, and descriptive note line.
 

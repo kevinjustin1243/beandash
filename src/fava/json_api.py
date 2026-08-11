@@ -770,6 +770,11 @@ def _totals_as_date_balance(
     ]
 
 
+#: Average number of days in a month, for annualised-rate-to-per-month
+#: conversions (e.g. turning a forecast's daily trend into "$X/mo").
+AVG_DAYS_PER_MONTH = Decimal("30.44")
+
+
 @dataclass(frozen=True)
 class Predictions:
     """Forecast-derived summary stats for the dashboard's forecast tiles."""
@@ -778,6 +783,7 @@ class Predictions:
     net_worth: Decimal
     net_worth_projected: Decimal
     net_worth_r_squared: float
+    net_worth_monthly_change: Decimal | None
     savings_rate: float | None
     spend_next_period: Decimal | None
     spend_trailing_monthly: Decimal
@@ -881,12 +887,18 @@ def get_predictions() -> Predictions:
         if nw_stats is not None
         else None
     )
+    net_worth_monthly_change = (
+        (nw_stats.daily_change * AVG_DAYS_PER_MONTH).quantize(Decimal("0.01"))
+        if nw_stats is not None
+        else None
+    )
 
     return Predictions(
         currency=currency,
         net_worth=current_net_worth,
         net_worth_projected=nw_stats.projected if nw_stats else zero,
         net_worth_r_squared=nw_stats.r_squared if nw_stats else 0.0,
+        net_worth_monthly_change=net_worth_monthly_change,
         savings_rate=savings_rate,
         spend_next_period=spend_next_period,
         spend_trailing_monthly=spend_trailing_monthly,

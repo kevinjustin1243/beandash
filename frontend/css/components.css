@@ -48,6 +48,10 @@ and any other panel-based layout.
   color: var(--red);
 }
 
+.stat-warning {
+  color: var(--warning);
+}
+
 details {
   display: block;
   min-width: 400px;

@@ -358,6 +358,7 @@ def test_api_predictions(test_client: FlaskClient) -> None:
         "net_worth",
         "net_worth_projected",
         "net_worth_r_squared",
+        "net_worth_monthly_change",
         "savings_rate",
         "spend_next_period",
         "spend_trailing_monthly",
@@ -369,6 +370,7 @@ def test_api_predictions(test_client: FlaskClient) -> None:
     assert isinstance(data["net_worth_r_squared"], float)
     assert data["fi_target"] is not None
     assert data["spend_trailing_monthly"] is not None
+    assert data["net_worth_monthly_change"] is not None
 
     # Narrowing to a period with no transactions at all: everything about
     # the (nonexistent) trend is empty/unknown, but this shouldn't error.
@@ -378,6 +380,7 @@ def test_api_predictions(test_client: FlaskClient) -> None:
     data = assert_api_success(response)
     assert data["savings_rate"] is None
     assert data["fi_years"] is None
+    assert data["net_worth_monthly_change"] is None
 
 
 def test_api_uncategorized_transaction(
