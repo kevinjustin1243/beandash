@@ -21,7 +21,7 @@ the app precisely to the design mockup and is not yet started.
 | 12 — Sidebar chrome (logo, status dots, footer) | ✅ Done |
 | 13 — Overview header (greeting, time pills) | ✅ Done |
 | 14 — Bespoke net worth chart | ✅ Done |
-| 15 — Allocation tile grid | ⏳ Pending |
+| 15 — Allocation tile grid | ✅ Done |
 | 16 — Holdings table redesign | ⏳ Pending |
 | 17 — Insights redesign | ⏳ Pending |
 | 18 — Suggester redesign | ⏳ Pending |
@@ -803,6 +803,9 @@ chart-helper tests, `svelte-check`/`eslint`/build clean.
 ---
 
 ## Phase 15 — Allocation tile grid
+
+**Status: ✅ Done** (implemented as a `get_dashboard()` extension rather than a separate
+`get_allocation()` endpoint, since the tree data was already computed there — see below.)
 
 **Goal:** replace the Assets-treemap tab (now gone per Phase 14) with the mockup's grid-of-tiles
 allocation card, plus its "cash runway" and "unrealized gains" stat rows. ("Equities drift vs.

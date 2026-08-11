@@ -1,4 +1,18 @@
 {
+  "allocation": [
+    {
+      "account": "Assets:US",
+      "balance": 105263.18144,
+      "name": "US",
+      "pct": 0.9983402596895169
+    },
+    {
+      "account": "Assets:Testing",
+      "balance": 175,
+      "name": "Testing",
+      "pct": 0.001659740310483109
+    }
+  ],
   "charts": [
     {
       "data": [
@@ -669,5 +683,6 @@
   ],
   "currency": "USD",
   "date_range": null,
+  "liquid_cash": 2274.57,
   "unrealized_gain": 11117.90304
 }

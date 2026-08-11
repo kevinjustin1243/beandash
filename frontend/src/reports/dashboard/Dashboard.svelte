@@ -1,5 +1,6 @@
 <script lang="ts">
   import { _ } from "../../i18n.ts";
+  import AllocationGrid from "./AllocationGrid.svelte";
   import ForecastTiles from "./ForecastTiles.svelte";
   import HoldingsPreview from "./HoldingsPreview.svelte";
   import type { DashboardReportProps } from "./index.ts";
@@ -18,20 +19,31 @@
     uncategorized,
     holdings,
     commodities,
+    allocation,
+    liquidCash,
   }: DashboardReportProps = $props();
 </script>
 
 <div class="dashboard-grid">
   <OverviewHeader />
 
-  <NetWorthHero
-    {charts}
-    {currency}
-    {unrealizedGain}
-    {netWorth}
-    {netWorthChange}
-    {predictions}
-  />
+  <div class="hero-row">
+    <NetWorthHero
+      {charts}
+      {currency}
+      {unrealizedGain}
+      {netWorth}
+      {netWorthChange}
+      {predictions}
+    />
+    <AllocationGrid
+      {allocation}
+      {liquidCash}
+      {predictions}
+      {unrealizedGain}
+      {currency}
+    />
+  </div>
 
   {#if uncategorized}
     <Suggester {uncategorized} />
@@ -60,6 +72,19 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 1em;
+  }
+
+  .hero-row {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1.9fr) minmax(260px, 1fr);
+    gap: 1em;
+  }
+
+  @media (width <= 900px) {
+    .hero-row {
+      grid-template-columns: 1fr;
+    }
   }
 
   .insights {

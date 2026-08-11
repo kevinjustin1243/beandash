@@ -150,11 +150,22 @@ export const tree_report_validator = object({
   date_range: optional(date_range),
 });
 
+export const allocation_entry_validator = object({
+  account: string,
+  name: string,
+  balance: number,
+  pct: number,
+});
+
+export type AllocationEntry = ValidationT<typeof allocation_entry_validator>;
+
 export const dashboard_validator = object({
   charts: charts_validator,
   date_range: optional(date_range),
   currency: string,
   unrealized_gain: optional(number),
+  allocation: array(allocation_entry_validator),
+  liquid_cash: number,
 });
 
 export const predictions_validator = object({
@@ -164,6 +175,7 @@ export const predictions_validator = object({
   net_worth_r_squared: number,
   savings_rate: optional(number),
   spend_next_period: optional(number),
+  spend_trailing_monthly: number,
   cash_flow_90d: optional(number),
   fi_target: number,
   fi_years: optional(number),

@@ -635,6 +635,16 @@ def get_balance_sheet() -> TreeReport:
 
 
 @dataclass(frozen=True)
+class AllocationEntry:
+    """One top-level Assets category, for the allocation tile grid."""
+
+    account: str
+    name: str
+    balance: Decimal
+    pct: float
+
+
+@dataclass(frozen=True)
 class DashboardReport:
     """Data for the dashboard."""
 
@@ -642,6 +652,60 @@ class DashboardReport:
     charts: Sequence[ChartData]
     currency: str
     unrealized_gain: Decimal | None
+    allocation: Sequence[AllocationEntry]
+    liquid_cash: Decimal
+
+
+def _allocation(
+    assets_node: SerialisedTreeNode,
+    currency: str,
+) -> Sequence[AllocationEntry]:
+    """Direct children of the Assets root, as shares of the total."""
+    total = assets_node.balance_children.get(currency, ZERO)
+    if total <= 0:
+        return []
+    entries = [
+        AllocationEntry(
+            account=child.account,
+            name=child.account.rsplit(":", maxsplit=1)[-1],
+            balance=balance,
+            pct=float(balance / total),
+        )
+        for child in assets_node.children
+        if (balance := child.balance_children.get(currency, ZERO)) > 0
+    ]
+    entries.sort(key=lambda entry: entry.balance, reverse=True)
+    return entries
+
+
+LIQUID_CASH_QUERY = """
+SELECT currency, cost_currency, sum(number(units(position))) as amount
+WHERE account_sortkey(account) ~ "^0"
+GROUP BY currency, cost_currency
+""".strip()
+
+
+def _liquid_cash(currency: str) -> Decimal:
+    """Plain (uncosted) balance of `currency` held directly in Assets.
+
+    Uses a query scoped to Assets only (unlike `HOLDINGS_QUERY`, which
+    also includes Liabilities) so this can't be dragged negative by an
+    unrelated credit-card balance in the same currency.
+    """
+    result = g.ledger.query_shell.execute_query_serialised(
+        g.filtered.entries_with_all_prices, LIQUID_CASH_QUERY
+    )
+    assert isinstance(result, QueryResultTable)  # noqa: S101
+    return next(
+        (
+            amount
+            for row_currency, cost_currency, amount in result.rows
+            if row_currency == currency
+            and cost_currency is None
+            and isinstance(amount, Decimal)
+        ),
+        ZERO,
+    )
 
 
 @api_endpoint
@@ -684,6 +748,8 @@ def get_dashboard() -> DashboardReport:
         charts,
         currency,
         unrealized_gain,
+        _allocation(assets_node, currency),
+        _liquid_cash(currency),
     )
 
 
@@ -714,6 +780,7 @@ class Predictions:
     net_worth_r_squared: float
     savings_rate: float | None
     spend_next_period: Decimal | None
+    spend_trailing_monthly: Decimal
     cash_flow_90d: Decimal | None
     fi_target: Decimal
     fi_years: float | None
@@ -789,6 +856,9 @@ def get_predictions() -> Predictions:
         else zero
     )
     fi_target = (trailing_annual_spend * 25).quantize(Decimal("0.01"))
+    spend_trailing_monthly = (trailing_annual_spend / 12).quantize(
+        Decimal("0.01"),
+    )
 
     savings_rate = None
     trailing_income_6 = [
@@ -819,6 +889,7 @@ def get_predictions() -> Predictions:
         net_worth_r_squared=nw_stats.r_squared if nw_stats else 0.0,
         savings_rate=savings_rate,
         spend_next_period=spend_next_period,
+        spend_trailing_monthly=spend_trailing_monthly,
         cash_flow_90d=cash_flow_90d,
         fi_target=fi_target,
         fi_years=fi_years,

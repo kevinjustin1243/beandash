@@ -282,14 +282,34 @@ def test_api_dashboard_unrealized_gain(test_client: FlaskClient) -> None:
     data = assert_api_success(response)
     assert data["currency"] == "USD"
     assert data["unrealized_gain"] is not None
+    assert data["allocation"]
+    assert sum(entry["pct"] for entry in data["allocation"]) <= 1.0
+    # Sorted descending by balance.
+    balances = [entry["balance"] for entry in data["allocation"]]
+    assert balances == sorted(balances, reverse=True)
+    # Only counts cash held directly in Assets - unaffected by the
+    # Liabilities:US:Chase:Slate credit card balance in the same currency.
+    assert 0 < data["liquid_cash"] < sum(balances)
 
     # Narrowing to a period with no assets in USD at all: unrealized gain
-    # can't be computed, but this shouldn't error.
+    # and allocation can't be computed, but this shouldn't error.
     response = test_client.get(
         "/long-example/api/dashboard", query_string={"time": "1990"}
     )
     data = assert_api_success(response)
     assert data["unrealized_gain"] is None
+    assert data["allocation"] == []
+    assert data["liquid_cash"] == 0
+
+    # A period whose plain-USD Assets balance nets to exactly zero (funded,
+    # then fully spent on commodity purchases).
+    response = test_client.get(
+        "/long-example/api/dashboard", query_string={"time": "2000"}
+    )
+    data = assert_api_success(response)
+    assert data["allocation"]
+    assert data["liquid_cash"] == 0
+    assert data["liquid_cash"] == 0
 
 
 def test_api_suggest_accounts(test_client: FlaskClient) -> None:
@@ -338,6 +358,7 @@ def test_api_predictions(test_client: FlaskClient) -> None:
         "net_worth_r_squared",
         "savings_rate",
         "spend_next_period",
+        "spend_trailing_monthly",
         "cash_flow_90d",
         "fi_target",
         "fi_years",
@@ -345,6 +366,7 @@ def test_api_predictions(test_client: FlaskClient) -> None:
     assert data["currency"] == "USD"
     assert isinstance(data["net_worth_r_squared"], float)
     assert data["fi_target"] is not None
+    assert data["spend_trailing_monthly"] is not None
 
     # Narrowing to a period with no transactions at all: everything about
     # the (nonexistent) trend is empty/unknown, but this shouldn't error.

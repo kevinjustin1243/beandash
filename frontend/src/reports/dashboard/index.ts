@@ -4,6 +4,7 @@ import {
   get_uncategorized_transaction,
 } from "../../api/index.ts";
 import type {
+  AllocationEntry,
   Commodities,
   Holding,
   Insight,
@@ -29,6 +30,8 @@ export interface DashboardReportProps {
   uncategorized: UncategorizedTransaction;
   holdings: Holding[];
   commodities: Commodities;
+  allocation: AllocationEntry[];
+  liquidCash: number;
 }
 
 export const dashboard = new Route<DashboardReportProps>(

@@ -73,10 +73,6 @@
 </div>
 
 <style>
-  .hero {
-    grid-column: 1 / -1;
-  }
-
   .hero-headline {
     display: flex;
     flex-wrap: wrap;

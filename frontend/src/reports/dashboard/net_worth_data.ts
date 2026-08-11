@@ -3,7 +3,11 @@ import {
   get_dashboard,
   get_predictions,
 } from "../../api/index.ts";
-import type { Commodities, Predictions } from "../../api/validators.ts";
+import type {
+  AllocationEntry,
+  Commodities,
+  Predictions,
+} from "../../api/validators.ts";
 import type { ParsedFavaChart } from "../../charts/index.ts";
 import { ParsedLineChart } from "../../charts/line.ts";
 import type { FiltersConversionInterval } from "../../stores/filters.ts";
@@ -17,6 +21,8 @@ export interface NetWorthHeroData {
   netWorthChange: number | null;
   predictions: Predictions;
   commodities: Commodities;
+  allocation: AllocationEntry[];
+  liquidCash: number;
 }
 
 /**
@@ -67,5 +73,7 @@ export async function load_net_worth_hero(
     netWorthChange,
     predictions,
     commodities,
+    allocation: report.allocation,
+    liquidCash: report.liquid_cash,
   };
 }
