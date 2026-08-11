@@ -39,12 +39,20 @@ class SuggestModule(FavaModule):
         self._idf: dict[str, float] = {}
 
     def load_file(self) -> None:  # noqa: D102
+        # Exclude the placeholder account itself from the candidates: it is
+        # where a transaction *starts*, not a real category to suggest as a
+        # replacement, and with too little other history for a payee it
+        # could otherwise rank as the top (or only) suggestion - a no-op
+        # that looks like a real categorization.
+        placeholder = self.ledger.fava_options.uncategorized_account
         account_tokens: dict[str, Counter[str]] = {}
         for txn in self.ledger.all_entries_by_type.Transaction:
             tokens = tokenize(f"{txn.payee or ''} {txn.narration}")
             if not tokens:
                 continue
             for posting in txn.postings:
+                if posting.account == placeholder:
+                    continue
                 counter = account_tokens.setdefault(posting.account, Counter())
                 counter.update(tokens)
         self._account_tokens = account_tokens

@@ -393,7 +393,11 @@ def test_api_uncategorized_transaction(
     response = test_client.get("/long-example/api/uncategorized_transaction")
     assert_api_success(response, None)
 
-    # Point the placeholder at an account that does have postings.
+    # Point the placeholder at an account that does have postings. In
+    # real usage `uncategorized_account` is a beancount custom-option
+    # parsed once per `load_file()`, in the same pass that rebuilds the
+    # suggester's index - so re-run that here too, rather than leaving
+    # the index built against the (unpatched) default placeholder.
     with app.test_request_context("/long-example/"):
         app.preprocess_request()
         monkeypatch.setattr(
@@ -401,6 +405,7 @@ def test_api_uncategorized_transaction(
             "uncategorized_account",
             "Expenses:Financial:Fees",
         )
+        g.ledger.suggest.load_file()
 
         response = test_client.get(
             "/long-example/api/uncategorized_transaction",
@@ -409,7 +414,14 @@ def test_api_uncategorized_transaction(
         assert data["placeholder_account"] == "Expenses:Financial:Fees"
         assert data["entry"]["payee"] == "BANK FEES"
         assert data["suggestions"]
-        assert data["suggestions"][0][0] == "Expenses:Financial:Fees"
+        # The placeholder account itself is never suggested as a
+        # replacement for itself - the funding account is the next best
+        # match instead.
+        assert data["suggestions"][0][0] == "Assets:US:BofA:Checking"
+        assert all(
+            account != "Expenses:Financial:Fees"
+            for account, _score in data["suggestions"]
+        )
 
 
 def test_api_holdings(

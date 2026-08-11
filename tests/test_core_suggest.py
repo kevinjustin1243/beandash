@@ -32,8 +32,15 @@ def _txn(payee: str, narration: str, *accounts: str) -> object:
 class _FakeLedger:
     """A stand-in for FavaLedger exposing just what SuggestModule needs."""
 
-    def __init__(self, transactions: list[object]) -> None:
+    def __init__(
+        self,
+        transactions: list[object],
+        uncategorized_account: str = "Expenses:Uncategorized",
+    ) -> None:
         self.all_entries_by_type = SimpleNamespace(Transaction=transactions)
+        self.fava_options = SimpleNamespace(
+            uncategorized_account=uncategorized_account,
+        )
 
 
 def test_suggest_accounts_new_payee() -> None:
@@ -79,6 +86,39 @@ def test_suggest_accounts_new_payee() -> None:
 
     # No text at all should also suggest nothing.
     assert module.suggest_accounts("") == []
+
+
+def test_suggest_accounts_excludes_placeholder_account() -> None:
+    # A payee with too little history that the placeholder account it was
+    # posted to would otherwise be the (only, or top) suggestion - a no-op
+    # that looks like a real categorization. It must never be suggested.
+    txns = [
+        _txn(
+            "Kettle & Vine",
+            "lunch, offsite",
+            "Liabilities:Chase",
+            "Expenses:Uncategorized",
+        ),
+    ]
+    module = SuggestModule(_FakeLedger(txns))  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
+    module.load_file()
+
+    result = module.suggest_accounts("Kettle & Vine lunch, offsite")
+    assert all(
+        account != "Expenses:Uncategorized" for account, _score in result
+    )
+
+    # With a custom placeholder account configured, that one is excluded
+    # instead - the default name isn't special-cased.
+    fake_ledger = _FakeLedger(txns, uncategorized_account="Liabilities:Chase")
+    module = SuggestModule(fake_ledger)  # type: ignore[arg-type]  # ty:ignore[invalid-argument-type]
+    module.load_file()
+
+    result = module.suggest_accounts("Kettle & Vine lunch, offsite")
+    assert all(account != "Liabilities:Chase" for account, _score in result)
+    assert any(
+        account == "Expenses:Uncategorized" for account, _score in result
+    )
 
 
 def test_suggest_accounts_example_ledger(example_ledger: FavaLedger) -> None:
