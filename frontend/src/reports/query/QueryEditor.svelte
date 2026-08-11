@@ -29,30 +29,37 @@
   });
 </script>
 
-<form
-  onsubmit={(event) => {
-    event.preventDefault();
-    submit();
-  }}
->
-  <div {@attach attach_editor(editor)}></div>
-  <button type="submit" {@attach keyboardShortcut("Control+Enter")}>
-    {_("Submit")}
-  </button>
-</form>
+<div class="card query-editor-card">
+  <div class="card-label">{_("Query")}</div>
+  <form
+    onsubmit={(event) => {
+      event.preventDefault();
+      submit();
+    }}
+  >
+    <div class="query-editor-input" {@attach attach_editor(editor)}></div>
+    <button type="submit" {@attach keyboardShortcut("Control+Enter")}>
+      {_("Submit")}
+    </button>
+  </form>
+</div>
 
 <style>
+  .query-editor-card {
+    margin-bottom: 1em;
+  }
+
   form {
     display: flex;
     align-items: center;
-    padding-bottom: 1em;
+    margin-top: 0.6em;
   }
 
   button {
     margin: 0;
   }
 
-  div {
+  .query-editor-input {
     flex-grow: 1;
     width: 100%;
     height: auto;

@@ -12,12 +12,26 @@
 <div class="row">
   <div class="column">
     {#each trees.slice(0, 2) as tree (tree.account)}
-      <TreeTable {tree} {end} />
+      <div class="card tree-card">
+        <TreeTable {tree} {end} />
+      </div>
     {/each}
   </div>
   <div class="column">
     {#each trees.slice(2) as tree (tree.account)}
-      <TreeTable {tree} {end} />
+      <div class="card tree-card">
+        <TreeTable {tree} {end} />
+      </div>
     {/each}
   </div>
 </div>
+
+<style>
+  .tree-card {
+    overflow-x: auto;
+  }
+
+  .tree-card + .tree-card {
+    margin-top: 1em;
+  }
+</style>

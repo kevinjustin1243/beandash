@@ -11,6 +11,14 @@
 
 <div class="row">
   {#each trees as tree (tree.account)}
-    <TreeTable {tree} {end} />
+    <div class="card tree-card">
+      <TreeTable {tree} {end} />
+    </div>
   {/each}
 </div>
+
+<style>
+  .tree-card {
+    overflow-x: auto;
+  }
+</style>

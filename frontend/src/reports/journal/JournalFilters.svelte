@@ -69,23 +69,30 @@
   );
 </script>
 
-<form class="flex-row">
-  {#each buttons as [type, button_text, title, shortcut, supertype] (type)}
-    <button
-      type="button"
-      title={title ?? format(toggleText, { type: button_text })}
-      {@attach keyboardShortcut(shortcut)}
-      class:inactive={!active(type, supertype)}
-      onclick={() => {
-        toggle_type(type);
-      }}
-    >
-      {button_text}
-    </button>
-  {/each}
-</form>
+<div class="card journal-filters">
+  <div class="card-label">{_("Entry types")}</div>
+  <form class="flex-row">
+    {#each buttons as [type, button_text, title, shortcut, supertype] (type)}
+      <button
+        type="button"
+        title={title ?? format(toggleText, { type: button_text })}
+        {@attach keyboardShortcut(shortcut)}
+        class:inactive={!active(type, supertype)}
+        onclick={() => {
+          toggle_type(type);
+        }}
+      >
+        {button_text}
+      </button>
+    {/each}
+  </form>
+</div>
 
 <style>
+  .journal-filters {
+    margin-bottom: 1em;
+  }
+
   form {
     justify-content: flex-end;
   }

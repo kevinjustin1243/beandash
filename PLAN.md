@@ -2,8 +2,8 @@
 
 ## Status
 
-Phases 1–10 (Part 1 + Part 2) done and pushed to `main`. Part 3 (below) is a new round matching
-the app precisely to the design mockup and is not yet started.
+All 20 phases (Parts 1–3) done and pushed to `main`. The app now matches the design mockup and
+the shared visual language extends across every report.
 
 | Phase | Status |
 | --- | --- |
@@ -26,7 +26,7 @@ the app precisely to the design mockup and is not yet started.
 | 17 — Insights redesign | ✅ Done |
 | 18 — Suggester redesign | ✅ Done |
 | 19 — Forecast tiles redesign | ✅ Done |
-| 20 — Shared visual language on ledger reports | ⏳ Pending |
+| 20 — Shared visual language on ledger reports | ✅ Done |
 
 ## Context
 
@@ -964,6 +964,14 @@ compute a genuine "vs. last time" delta.)
 ---
 
 ## Phase 20 — Shared visual language on ledger reports
+
+**Status: ✅ Done** (numeric monospace was already applied globally via `td.num, th.num` in
+base.css from an earlier phase, so this phase was purely the `.card`/`.card-label` wrapping pass:
+each Balance Sheet/Income Statement/Trial Balance tree gets its own card, matching the dashboard's
+per-panel grouping; Journal's entry-type filter row and Query's editor each get a labeled card.
+Left the shared `TreeTable.svelte` component and the generic `<details>`/`<summary>` styling
+(used by Query's result boxes, Errors, Options, and extensions) untouched — both are shared
+infrastructure outside this phase's blast radius.)
 
 **Goal:** apply the Phase 6/8 card/label/mono-number vocabulary to Journal, Balance Sheet, Income
 Statement, Trial Balance, and Query — consistency pass, not a redesign (no mockup exists for
