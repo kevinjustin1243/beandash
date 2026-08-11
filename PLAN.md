@@ -2,8 +2,9 @@
 
 ## Status
 
-All 20 phases (Parts 1–3) done and pushed to `main`. The app now matches the design mockup and
-the shared visual language extends across every report.
+Phases 1–20 (Parts 1–3) done and pushed to `main`. The app now matches the design mockup and the
+shared visual language extends across every report. Part 4 (Goals and Budgets, Phases 21–22) is
+requested but not yet started — no mockup exists for either.
 
 | Phase | Status |
 | --- | --- |
@@ -27,6 +28,8 @@ the shared visual language extends across every report.
 | 18 — Suggester redesign | ✅ Done |
 | 19 — Forecast tiles redesign | ✅ Done |
 | 20 — Shared visual language on ledger reports | ✅ Done |
+| 21 — Goals | ⏳ Pending |
+| 22 — Budgets | ⏳ Pending |
 
 ## Context
 
@@ -1000,3 +1003,150 @@ in-browser pass per phase against `long-example.beancount` (and against the mock
 for Phases 12–19). Land each phase as its own commit. Given the size of this part, check in with
 the user after Phase 11 (the removal phase, highest blast radius) and again after Phase 14 (the
 bespoke chart, the biggest single visual swing) rather than only at the very end.
+
+---
+---
+
+# Part 4 — Goals and Budgets
+
+## Context
+
+Requested after Part 3 landed. Unlike Parts 2–3 there is **no mockup for either feature** — the
+supplied design covers only the Overview page, which has no goals or budgets panel. So these two
+phases follow the *established visual language* (the `.card`/`.card-label`/`.stat-*`/mono-number
+vocabulary from Phases 6/8, and the meter-bar pattern from Phase 19's forecast tiles), rather
+than matching a spec. Expect a round of visual iteration once each is in front of real data.
+
+The two are deliberately split because their starting points are completely different:
+
+- **Budgets already exist in fava** and are half-surfaced. `src/fava/core/budgets.py` is a
+  complete, tested `BudgetModule`: it parses `custom "budget"` directives
+  (`2015-04-09 custom "budget" Expenses:Books "monthly" 20.00 EUR`, documented in
+  `help/budgets.md`, with `daily`/`weekly`/`monthly`/`quarterly`/`yearly` periods normalised to a
+  daily rate and re-expanded over any date range), and exposes
+  `calculate(account, begin, end)` / `calculate_children(account, begin, end)`. But the **only**
+  thing that reads it is `get_account_report()` (`json_api.py`), which returns budgets for a
+  *single* account, rendered by `IntervalTreeTable`/`BarChart` on that account's page. There is
+  no cross-account "how am I doing against budget this month" view anywhere. Phase 22 is
+  therefore mostly *surfacing* existing computation, not building an engine.
+- **Goals do not exist at all.** Nothing in the codebase models a target balance or a target
+  date. Phase 21 needs a new directive, a new module, a new endpoint and a new page.
+
+Reusable machinery both phases should lean on rather than reinvent:
+- `core/forecast.py::years_to_target(current_value, daily_change, target_value)` already answers
+  "when will a linearly-trending value reach a target, given its slope" — returning `0.0` if
+  already reached and `None` if the trend never gets there. That is exactly a goal ETA, and it is
+  already unit-tested. `fit_currencies()`/`forecast()` supply the `daily_change` slope.
+- `parse_budgets()` (`core/budgets.py:86`) is the reference implementation for parsing a
+  `custom` directive into a typed record with per-entry error collection into a `BeancountError`
+  subclass — a goals parser should mirror it line-for-line in structure.
+- The Phase 19 meter bar (`.tile-meter`/`.tile-meter-fill`/`.tile-delta` in `ForecastTiles.svelte`)
+  is the progress-bar treatment; promote it into `components.css` when the second consumer
+  appears rather than duplicating the CSS.
+- `FavaLedger.__init__`/`load_file()` (`core/__init__.py:396-446`) is where a new module gets
+  wired, and `fava_options.py`'s `parse_option_custom_entry` is the pattern if any of this needs
+  a setting instead of a directive.
+
+---
+
+## Phase 21 — Goals
+
+**Goal:** savings/payoff goals with progress and a projected completion date — "House fund:
+32,400 of 50,000 (65%), on track for Mar 2027 at the current rate".
+
+**How a goal is defined** — decide with the user before building, but the strong default is a new
+`custom "goal"` directive, mirroring `custom "budget"`: it keeps goals versioned in the ledger
+alongside the data they describe, needs no new config surface, and reuses the parsing pattern and
+the error-reporting path that already feeds the Errors report. Proposed shape:
+
+```
+2026-01-01 custom "goal" Assets:US:BofA:Savings "House fund" 50000.00 USD 2027-06-01
+```
+
+i.e. `<account> <label> <target amount> [<target date>]`, with the target date optional (a goal
+with no date still shows progress, just no ETA/on-track verdict). A *payoff* goal is the same
+directive pointed at a liability, where progress runs from the starting balance toward zero
+rather than from zero toward a target — worth handling explicitly, since "pay off the credit
+card" is as common as "save for a house" and the naive `balance / target` maths is wrong for it.
+
+- **Backend:** new `src/fava/core/goals.py` — a `Goal` NamedTuple and `parse_goals(custom_entries)`
+  modelled directly on `parse_budgets()`, plus a `GoalsModule(FavaModule)` wired into
+  `FavaLedger` alongside `budgets`. New `get_goals()` endpoint in `json_api.py` returning per
+  goal: label, account, target, target date, current balance (from
+  `g.filtered.root_tree.get(account).serialise(...)`, the same mechanism `unrealized_gain` and
+  Phase 15's allocation already use), `pct_complete`, and — where a target date is set — an
+  on-track verdict computed by feeding that account's own balance history through
+  `fit_currencies()` and `years_to_target()`. Report parse failures as `GoalError`s so they
+  surface in the existing Errors report for free.
+- **Frontend:** new `frontend/src/reports/goals/{index.ts,Goals.svelte}` registered the usual
+  three ways (`CLIENT_SIDE_REPORTS`, `frontend_routes`, a `<Link>` in `AsideContents.svelte`
+  under DASHBOARDS), rendering one card per goal with the Phase 19 meter bar, the amount pair,
+  and a tone-coded on-track/behind badge (green/amber, reusing `--green`/`--warning`). Plus a
+  compact top-N summary card on the Overview, consistent with how the dashboard surfaces
+  Holdings and Insights.
+- **Empty state matters here** — unlike every other report, a brand-new user has zero goals and
+  no obvious way to discover the directive syntax. The page should render a short "no goals yet"
+  card showing a copy-pasteable example directive and linking to the help page, not a blank
+  screen. Add a `help/goals.md` alongside `help/budgets.md`.
+
+**Verification:** unit tests for `parse_goals` (valid, malformed, missing optional date, liability
+payoff direction) using the `_FakeLedger`/`SimpleNamespace` pattern from
+`tests/test_core_budgets.py`; `test_json_api.py` coverage for `get_goals()` including the
+no-goals-configured case; add a couple of `custom "goal"` entries to a test ledger fixture rather
+than only synthetic ones, so the endpoint is exercised end-to-end; keep the 100% coverage bar;
+manual pass on the new page and the Overview card in both themes.
+
+---
+
+## Phase 22 — Budgets
+
+**Goal:** a cross-account budget-vs-actual view for the current period — the thing
+`core/budgets.py` has always been able to compute but that nothing has ever asked it for at more
+than one account at a time.
+
+- **Backend:** new `get_budget_report()` in `json_api.py`. Collect every account that has at
+  least one budget directive (`g.ledger.budgets.budgets` keys — note `BudgetDict` is keyed by
+  account, so the budgeted set is just its keys, no tree walk needed), then for each, call the
+  existing `budgets.calculate_children(account, begin, end)` over `g.filtered.date_range` and
+  pair it with actual spend for the same range from
+  `g.ledger.charts.interval_totals(...)`/the account tree. Return per account:
+  `{account, budgeted, actual, remaining, pct_used}`, plus ledger-wide totals. No new budget
+  maths — `calculate_children` already handles the daily-rate expansion and the
+  budget-supersedes-previous-budget semantics.
+- **Watch out for:** budgets are per-currency (`Budget.currency`), and `calculate*` returns a
+  `Counter`-shaped mapping of currency → amount, so the endpoint must pick the operating
+  currency the same way `get_dashboard`/`get_predictions` do rather than assuming a single
+  value. Also note budgets can be set on a parent account and inherited by children —
+  `calculate` vs `calculate_children` differ precisely on that, and using the wrong one will
+  silently double-count or under-count. Prefer `calculate_children` and verify against the
+  account report's own numbers for the same account and period, which is a ready-made oracle.
+- **Frontend:** new `frontend/src/reports/budgets/{index.ts,Budgets.svelte}`, registered the
+  usual three ways under a new sidebar entry. One row per budgeted account: name, a meter bar
+  (Phase 19 pattern) filled to `pct_used` and tone-coded green/amber/red at sensible thresholds
+  (e.g. under 80% / 80–100% / over), and the budgeted-vs-actual pair in mono. A totals row at the
+  bottom, matching the Holdings table's footer treatment. Plus an Overview card showing the few
+  most over-budget categories for the current month.
+- **Time range:** the page should follow the global `time` filter like every other report (so
+  the Phase 13 header pills work on it), defaulting to the current month, which is the period a
+  budget question is almost always asked about.
+
+**Verification:** `test_json_api.py` tests for `get_budget_report()` against
+`tests/data/example.beancount`, which already contains a `custom "budget"` directive
+(`2012-11-20 custom "budget" Expenses:Books "weekly" 20.00 EUR`) — assert its numbers agree with
+what `get_account_report()` reports for `Expenses:Books` over the same range, which catches the
+`calculate` vs `calculate_children` mistake directly; a no-budgets-configured case against
+`long-example.beancount` (which has none) returning an empty report rather than erroring; 100%
+coverage bar; manual pass in both themes.
+
+---
+
+## Overall verification for Part 4
+
+Same bar as Parts 1–3, **plus the two gates that were being missed until the Part 3 review**:
+`stylelint --config frontend/stylelint.config.js` and `prettier --check` over any touched
+`.svelte`/`.css` (biome does not cover Svelte markup formatting or CSS property order, and the
+project enforces both via pre-commit). Full gate list: `pytest --cov=fava --cov-fail-under=100`,
+`ruff check`/`format`, `mypy`, `ty check`, `tsc`, `svelte-check`, `eslint`, `biome check`,
+`stylelint`, `prettier`, `deno lint`, frontend unit tests, build, and a manual in-browser pass.
+Land each phase as its own commit. Check in with the user after Phase 21 — the `custom "goal"`
+directive shape is a real API decision that is awkward to change once goals exist in a ledger.
