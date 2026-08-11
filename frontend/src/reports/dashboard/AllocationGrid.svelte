@@ -83,16 +83,16 @@
 
   .tile-grid {
     display: grid;
-    grid-auto-rows: 58px;
     grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 58px;
     gap: 6px;
     margin-bottom: 1em;
   }
 
   .tile {
     display: flex;
-    grid-column: span 2;
     flex-direction: column;
+    grid-column: span 2;
     justify-content: space-between;
     padding: 9px 10px;
     overflow: hidden;
@@ -101,10 +101,10 @@
 
   .tile-name {
     overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 11px;
     font-weight: 500;
     color: #06120d;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 

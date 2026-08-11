@@ -19,7 +19,9 @@
 /src/fava/static/*.woff2
 /src/fava/translations/**/messages.mo
 /venv/
+/.venv-ci/
 /start.sh
+/Dark Beandash design overview.zip
 
 *.pyc
 *.so

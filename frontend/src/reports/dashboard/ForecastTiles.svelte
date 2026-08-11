@@ -35,8 +35,7 @@
     predictions.spend_next_period != null &&
       predictions.spend_trailing_monthly > 0
       ? clamp_pct(
-          (predictions.spend_next_period /
-            predictions.spend_trailing_monthly) *
+          (predictions.spend_next_period / predictions.spend_trailing_monthly) *
             100,
         )
       : 0,
@@ -182,8 +181,8 @@
 <style>
   .forecast-tiles {
     display: grid;
-    grid-column: 1 / -1;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-column: 1 / -1;
     gap: 1em;
   }
 
@@ -193,8 +192,8 @@
 
   .tile-meter {
     display: flex;
-    align-items: center;
     gap: 0.5em;
+    align-items: center;
     margin-top: 0.6em;
   }
 

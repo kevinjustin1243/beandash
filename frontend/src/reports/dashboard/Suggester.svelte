@@ -61,8 +61,9 @@
     </div>
     <ul class="suggester-postings">
       {#each entry.postings as posting (posting.account + posting.amount)}
-        <li class:suggester-placeholder={posting.account ===
-          uncategorized.placeholder_account}
+        <li
+          class:suggester-placeholder={posting.account ===
+            uncategorized.placeholder_account}
         >
           <span>{posting.account}</span>
           <span class="suggester-amount">{posting.amount}</span>
@@ -89,8 +90,7 @@
                   style:width="{match_pct(score).toString()}%"
                 ></span>
               </span>
-              <span class="suggester-suggestion-pct">{match_pct(score)}%</span
-              >
+              <span class="suggester-suggestion-pct">{match_pct(score)}%</span>
             </button>
           </li>
         {/each}
@@ -181,14 +181,18 @@
     font: inherit;
     color: inherit;
     text-align: left;
+    cursor: pointer;
     background-color: var(--background-darkest);
     border: 1px solid var(--border);
     border-radius: 9px;
-    cursor: pointer;
   }
 
   .suggester-suggestion-top {
-    background-color: color-mix(in srgb, var(--green) 12%, var(--background-darkest));
+    background-color: color-mix(
+      in srgb,
+      var(--green) 12%,
+      var(--background-darkest)
+    );
     border-color: color-mix(in srgb, var(--green) 45%, var(--border));
   }
 
@@ -236,8 +240,8 @@
   .suggester-accept-top {
     flex: 1 1 auto;
     padding: 0.55em;
-    font-weight: 600;
     font-size: 0.85em;
+    font-weight: 600;
     color: var(--background-darker);
     text-align: center;
     cursor: pointer;

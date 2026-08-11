@@ -65,8 +65,8 @@
 
   .hero-row {
     display: grid;
-    grid-column: 1 / -1;
     grid-template-columns: minmax(0, 1.9fr) minmax(260px, 1fr);
+    grid-column: 1 / -1;
     gap: 1em;
   }
 

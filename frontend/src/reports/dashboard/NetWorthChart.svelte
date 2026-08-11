@@ -12,9 +12,7 @@
     $props();
 
   let geometry = $derived(
-    build_net_worth_chart_geometry(
-      extract_net_worth_series(charts, currency),
-    ),
+    build_net_worth_chart_geometry(extract_net_worth_series(charts, currency)),
   );
 </script>
 
@@ -150,8 +148,8 @@
 
   .legend div {
     display: flex;
-    align-items: center;
     gap: 6px;
+    align-items: center;
   }
 
   .swatch {

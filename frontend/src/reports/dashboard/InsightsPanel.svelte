@@ -45,9 +45,9 @@
 
   .insight a {
     display: flex;
+    gap: 0.75em;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75em;
     padding: 0.4em 0.5em 0.4em 0.75em;
     color: inherit;
   }

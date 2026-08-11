@@ -177,7 +177,7 @@
             <td class="holdings-sparkline">
               {#if points != null}
                 <svg viewBox="0 0 {SPARKLINE_WIDTH} {SPARKLINE_HEIGHT}">
-                  <polyline points={points}></polyline>
+                  <polyline {points}></polyline>
                 </svg>
               {/if}
             </td>
@@ -236,10 +236,10 @@
     padding: 0.2em 0.6em;
     font-size: 0.75em;
     color: var(--text-color-lightest);
+    cursor: pointer;
     background: none;
     border: 1px solid var(--border);
     border-radius: 10px;
-    cursor: pointer;
   }
 
   table {
@@ -267,8 +267,8 @@
 
   td {
     padding: 0.4em 0.5em;
-    text-align: right;
     vertical-align: top;
+    text-align: right;
     border-top: 1px solid var(--border);
   }
 
@@ -277,8 +277,8 @@
   }
 
   .holdings-name {
-    font-weight: 400;
     font-size: 0.8em;
+    font-weight: 400;
   }
 
   .holdings-price-live {

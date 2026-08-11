@@ -87,10 +87,10 @@
   .overview-header {
     display: flex;
     flex-wrap: wrap;
+    grid-column: 1 / -1;
+    gap: 1em;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 1em;
-    grid-column: 1 / -1;
   }
 
   h1 {
@@ -117,10 +117,10 @@
     font-family: var(--font-family-monospaced);
     font-size: 0.75em;
     color: var(--text-color-lightest);
+    cursor: pointer;
     background: none;
     border: none;
     border-radius: 7px;
-    cursor: pointer;
   }
 
   .time-pills button.active {

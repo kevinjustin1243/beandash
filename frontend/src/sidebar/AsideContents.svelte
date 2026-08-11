@@ -104,8 +104,8 @@
 <style>
   .brand {
     display: flex;
-    align-items: center;
     gap: 10px;
+    align-items: center;
     padding: 0 0.5em 0.75em 1em;
   }
 
@@ -137,16 +137,16 @@
 
   .sidebar-footer-filename {
     overflow: hidden;
+    text-overflow: ellipsis;
     font-family: var(--font-family-monospaced);
     color: var(--sidebar-color);
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .sidebar-footer-status {
     display: flex;
-    align-items: center;
     gap: 7px;
+    align-items: center;
     padding-top: 4px;
     font-family: var(--font-family-monospaced);
     color: var(--green);
