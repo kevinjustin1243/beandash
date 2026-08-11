@@ -1,12 +1,12 @@
 import { get_commodities, get_holdings } from "../../api/index.ts";
-import type { Commodities, Holding } from "../../api/validators.ts";
+import type { Commodities, HoldingsReport } from "../../api/validators.ts";
 import { _ } from "../../i18n.ts";
 import { getURLFilters } from "../../stores/filters.ts";
 import { Route } from "../route.ts";
 import HoldingsLive from "./HoldingsLive.svelte";
 
 export interface HoldingsLiveReportProps {
-  holdings: Holding[];
+  holdingsReport: HoldingsReport;
   commodities: Commodities;
 }
 
@@ -15,11 +15,11 @@ export const holdings_live = new Route<HoldingsLiveReportProps>(
   HoldingsLive,
   async (url) => {
     const filters = getURLFilters(url);
-    const [holdings, commodities] = await Promise.all([
+    const [holdingsReport, commodities] = await Promise.all([
       get_holdings(filters),
       get_commodities(filters),
     ]);
-    return { holdings, commodities };
+    return { holdingsReport, commodities };
   },
   () => _("Holdings"),
 );

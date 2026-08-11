@@ -959,6 +959,16 @@ GROUP BY currency, cost_currency
 ORDER BY currency, cost_currency
 """.strip()
 
+#: BQL only supports DISTINCT as a statement-level modifier, not inside an
+#: aggregate function, so counting distinct accounts per holding isn't
+#: possible in the same query above - this gets the distinct count across
+#: the whole holdings universe instead, for a summary line rather than a
+#: per-row breakdown.
+ACCOUNT_COUNT_QUERY = """
+SELECT DISTINCT account
+WHERE account_sortkey(account) ~ "^[01]"
+""".strip()
+
 
 @dataclass(frozen=True)
 class Holding:
@@ -973,13 +983,21 @@ class Holding:
     unrealized_profit_pct: Decimal
 
 
+@dataclass(frozen=True)
+class HoldingsReport:
+    """Holdings aggregated by commodity, plus how many accounts hold them."""
+
+    holdings: Sequence[Holding]
+    account_count: int
+
+
 def _as_inventory(value: object) -> SimpleCounterInventory:
     assert isinstance(value, SimpleCounterInventory)  # noqa: S101
     return value
 
 
 @api_endpoint
-def get_holdings() -> Sequence[Holding]:
+def get_holdings() -> HoldingsReport:
     """Get holdings aggregated by commodity, for the richer holdings table."""
     g.ledger.changed()
     result = g.ledger.query_shell.execute_query_serialised(
@@ -1024,7 +1042,12 @@ def get_holdings() -> Sequence[Holding]:
                 unrealized_profit_pct=pct,
             ),
         )
-    return holdings
+    account_result = g.ledger.query_shell.execute_query_serialised(
+        g.filtered.entries_with_all_prices, ACCOUNT_COUNT_QUERY
+    )
+    assert isinstance(account_result, QueryResultTable)  # noqa: S101
+
+    return HoldingsReport(holdings, len(account_result.rows))
 
 
 @api_endpoint

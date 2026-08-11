@@ -17,7 +17,7 @@
     insights,
     predictions,
     uncategorized,
-    holdings,
+    holdingsReport,
     commodities,
     allocation,
     liquidCash,
@@ -49,7 +49,7 @@
     <Suggester {uncategorized} />
   {/if}
 
-  <HoldingsPreview {holdings} {commodities} />
+  <HoldingsPreview {holdingsReport} {commodities} />
 
   {#if insights.length}
     <div class="card insights-card">

@@ -22,7 +22,7 @@ the app precisely to the design mockup and is not yet started.
 | 13 — Overview header (greeting, time pills) | ✅ Done |
 | 14 — Bespoke net worth chart | ✅ Done |
 | 15 — Allocation tile grid | ✅ Done |
-| 16 — Holdings table redesign | ⏳ Pending |
+| 16 — Holdings table redesign | ✅ Done |
 | 17 — Insights redesign | ⏳ Pending |
 | 18 — Suggester redesign | ⏳ Pending |
 | 19 — Forecast tiles redesign | ⏳ Pending |
@@ -841,6 +841,10 @@ percentages sum to ~100%, cash runway/unrealized gains numbers are sane, `pytest
 ---
 
 ## Phase 16 — Holdings table redesign
+
+**Status: ✅ Done** (`get_holdings()` now returns `{holdings, account_count}` - BQL has no
+`count(distinct(...))` inside an aggregate, so the account count comes from a second
+`SELECT DISTINCT account` query rather than a per-row breakdown.)
 
 **Goal:** restyle `HoldingsPreview.svelte` (used by both the Overview preview and the full
 `/holdings_live/` page) to the mockup's exact column set and chrome.

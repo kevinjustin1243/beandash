@@ -6,7 +6,7 @@ import {
 import type {
   AllocationEntry,
   Commodities,
-  Holding,
+  HoldingsReport,
   Insight,
   Predictions,
   UncategorizedTransaction,
@@ -28,7 +28,7 @@ export interface DashboardReportProps {
   insights: Insight[];
   predictions: Predictions;
   uncategorized: UncategorizedTransaction;
-  holdings: Holding[];
+  holdingsReport: HoldingsReport;
   commodities: Commodities;
   allocation: AllocationEntry[];
   liquidCash: number;
@@ -39,7 +39,7 @@ export const dashboard = new Route<DashboardReportProps>(
   Dashboard,
   async (url) => {
     const filters = getURLFilters(url);
-    const [hero, insights, uncategorized, holdings] = await Promise.all([
+    const [hero, insights, uncategorized, holdingsReport] = await Promise.all([
       load_net_worth_hero(filters),
       get_insights(filters),
       get_uncategorized_transaction(),
@@ -49,7 +49,7 @@ export const dashboard = new Route<DashboardReportProps>(
       ...hero,
       insights,
       uncategorized,
-      holdings,
+      holdingsReport,
     };
   },
   () => _("Dashboard"),

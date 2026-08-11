@@ -2,7 +2,7 @@
   import HoldingsPreview from "../dashboard/HoldingsPreview.svelte";
   import type { HoldingsLiveReportProps } from "./index.ts";
 
-  let { holdings, commodities }: HoldingsLiveReportProps = $props();
+  let { holdingsReport, commodities }: HoldingsLiveReportProps = $props();
 </script>
 
-<HoldingsPreview {holdings} {commodities} />
+<HoldingsPreview {holdingsReport} {commodities} />

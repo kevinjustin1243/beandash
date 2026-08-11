@@ -17,7 +17,7 @@ import {
   context_validator,
   dashboard_validator,
   error_validator,
-  holding_validator,
+  holdings_report_validator,
   insight_validator,
   ledgerDataValidator,
   live_prices_validator,
@@ -247,7 +247,7 @@ export const get_errors = define_paramless_endpoint(
 );
 export const get_holdings = define_endpoint(
   "holdings",
-  array(holding_validator),
+  holdings_report_validator,
   filters,
 );
 export const get_income_statement = define_endpoint(

@@ -208,6 +208,13 @@ export const holding_validator = object({
 
 export type Holding = ValidationT<typeof holding_validator>;
 
+export const holdings_report_validator = object({
+  holdings: array(holding_validator),
+  account_count: number,
+});
+
+export type HoldingsReport = ValidationT<typeof holdings_report_validator>;
+
 export const quote_validator = object({
   price: number,
   day_change_pct: number,

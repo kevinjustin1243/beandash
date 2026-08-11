@@ -413,7 +413,10 @@ def test_api_holdings(
 ) -> None:
     response = test_client.get("/long-example/api/holdings")
     data = assert_api_success(response)
-    by_currency = {holding["currency"]: holding for holding in data}
+    assert data["account_count"] > 0
+    by_currency = {
+        holding["currency"]: holding for holding in data["holdings"]
+    }
 
     # A holding with a recorded price: units/book/market value and percent
     # gain are all populated.
