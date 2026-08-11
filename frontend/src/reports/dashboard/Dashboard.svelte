@@ -31,7 +31,6 @@
     <NetWorthHero
       {charts}
       {currency}
-      {unrealizedGain}
       {netWorth}
       {netWorthChange}
       {predictions}

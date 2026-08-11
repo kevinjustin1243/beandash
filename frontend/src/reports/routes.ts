@@ -1,7 +1,6 @@
 import { account_report } from "./accounts/index.ts";
 import { dashboard } from "./dashboard/index.ts";
 import { errors } from "./errors/index.ts";
-import { holdings } from "./holdings/index.ts";
 import { holdings_live } from "./holdings_live/index.ts";
 import { journal } from "./journal/index.ts";
 import { net_worth } from "./net_worth/index.ts";
@@ -28,7 +27,6 @@ export const frontend_routes: FrontendRoute[] = [
   balance_sheet,
   dashboard,
   errors,
-  holdings,
   holdings_live,
   income_statement,
   journal,

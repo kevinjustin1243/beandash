@@ -74,7 +74,6 @@ CLIENT_SIDE_REPORTS = [
     "balance_sheet",
     "dashboard",
     "errors",
-    "holdings",
     "holdings_live",
     "journal",
     "income_statement",
@@ -328,14 +327,6 @@ def _setup_routes(fava_app: Flask) -> None:  # noqa: PLR0915
         key = request.args.get("key", "")
         document_path = g.ledger.statement_path(entry_hash, key)
         return send_file_inline(document_path)
-
-    @fava_app.route(
-        "/<bfile>/holdings"
-        "/by_<any(account,currency,cost_currency):aggregation_key>/",
-    )
-    def holdings_by(**_kwargs: str) -> str:
-        """Get the client-side-rendered holdings report."""
-        return render_template("_layout.html", content="")
 
     @fava_app.route("/<bfile>/<report_name>/")
     def report(report_name: str) -> str:

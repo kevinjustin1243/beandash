@@ -8,14 +8,12 @@
   let {
     charts,
     currency,
-    unrealizedGain,
     netWorth,
     netWorthChange,
     predictions,
   }: {
     charts: ParsedFavaChart[];
     currency: string;
-    unrealizedGain: number | null;
     netWorth: number | null;
     netWorthChange: number | null;
     predictions: Predictions;
@@ -53,18 +51,6 @@
         <div class="card-label">{_("Savings rate")}</div>
         <div class="stat-value">
           {$ctx.percentage(predictions.savings_rate)}
-        </div>
-      </div>
-    {/if}
-    {#if unrealizedGain != null}
-      <div>
-        <div class="card-label">{_("Unrealized gain")}</div>
-        <div
-          class="stat-value"
-          class:stat-positive={unrealizedGain >= 0}
-          class:stat-negative={unrealizedGain < 0}
-        >
-          {$ctx.amount(unrealizedGain, currency)}
         </div>
       </div>
     {/if}

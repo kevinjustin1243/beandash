@@ -65,9 +65,6 @@ def test_client_side_reports(test_client: FlaskClient) -> None:
     response = test_client.get("/long-example/account/Assets/")
     assert journal_html == assert_success(response)
 
-    response = test_client.get("/long-example/holdings/by_account/")
-    assert journal_html == assert_success(response)
-
     response = test_client.get("/long-example/holdings_live/")
     assert journal_html == assert_success(response)
 
@@ -93,8 +90,10 @@ def test_redirect(test_client: FlaskClient) -> None:
         ("/example/document/"),
         ("/example/document/?filename=not-path"),
         ("/example/not-a-report/"),
-        ("/example/holdings/not-a-holdings-aggregation-key/"),
-        ("/example/holdings/by_not-a-holdings-aggregation-key/"),
+        # The BQL-based holdings report was removed in favour of the
+        # live-price Holdings page, so its URLs no longer resolve.
+        ("/example/holdings/"),
+        ("/example/holdings/by_account/"),
         ("/example/account/Assets:US:BofA:Checking/not_a_subreport/"),
     ],
 )
