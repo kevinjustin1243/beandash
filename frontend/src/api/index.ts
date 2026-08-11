@@ -13,6 +13,7 @@ import { base_url } from "../stores/index.ts";
 import { set_mtime } from "../stores/mtime.ts";
 import {
   account_report_validator,
+  budget_report_validator,
   commodities_validator,
   context_validator,
   dashboard_validator,
@@ -44,6 +45,7 @@ type DeleteEndpoint = "document" | "source_slice";
 type GetEndpoint =
   | "balance_sheet"
   | "account_report"
+  | "budgets"
   | "changed"
   | "commodities"
   | "context"
@@ -228,6 +230,11 @@ export const get_balance_sheet = define_endpoint(
   "balance_sheet",
   tree_report_validator,
   filters_conversion_interval,
+);
+export const get_budgets = define_endpoint(
+  "budgets",
+  budget_report_validator,
+  filters,
 );
 export const get_changed = define_paramless_endpoint("changed", boolean);
 export const get_commodities = define_endpoint(

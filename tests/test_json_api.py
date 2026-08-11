@@ -452,6 +452,82 @@ def test_api_goals(test_client: FlaskClient) -> None:
     assert_api_success(response, [])
 
 
+def test_api_budgets(test_client: FlaskClient) -> None:
+    # example.beancount has budgeted accounts: Books (weekly, no actual
+    # spend in this fixture), Food (monthly, real postings in December),
+    # Others (monthly, real postings, and a budgeted grandchild
+    # Others:Sub:Deep - which must NOT show as its own row, since its
+    # budget is already folded into Others' calculate_children total) -
+    # pin an explicit period covering all of them.
+    response = test_client.get(
+        "/example/api/budgets", query_string={"time": "2012-12"}
+    )
+    data = assert_api_success(response)
+    assert data["currency"] == "EUR"
+    assert data["date_range"] == {
+        "begin": "2012-12-01",
+        "end": "2013-01-01",
+    }
+    by_account = {row["account"]: row for row in data["accounts"]}
+    assert by_account.keys() == {
+        "Expenses:Books",
+        "Expenses:Food",
+        "Expenses:Others",
+    }
+
+    # Cross-check the budgeted amount against get_account_report()'s own
+    # number for the same account and period - this is the case that
+    # would catch a `calculate` vs. `calculate_children` mix-up.
+    account_response = test_client.get(
+        "/example/api/account_report",
+        query_string={
+            "a": "Expenses:Books",
+            "r": "changes",
+            "time": "2012-12",
+        },
+    )
+    account_data = assert_api_success(account_response)
+    expected_budgeted = account_data["charts"][1]["data"][0]["budgets"]["EUR"]
+    assert by_account["Expenses:Books"]["budgeted"] == expected_budgeted
+    assert by_account["Expenses:Books"]["actual"] == 0
+    assert by_account["Expenses:Books"]["remaining"] == expected_budgeted
+    assert by_account["Expenses:Books"]["pct_used"] == 0.0
+
+    # Food has real postings in this period and is over budget.
+    food = by_account["Expenses:Food"]
+    assert food["budgeted"] == 50.0
+    assert food["actual"] == 70.0
+    assert food["remaining"] == -20.0
+    assert food["pct_used"] == pytest.approx(1.4)
+
+    # Others' budgeted total (105.0) is its own 100.0/month plus its
+    # budgeted grandchild's 5.0/month, folded in via calculate_children -
+    # confirming the grandchild's amount counts once, not as a second row.
+    others = by_account["Expenses:Others"]
+    assert others["budgeted"] == 105.0
+    assert others["actual"] == 10.0
+
+    # Sorted most-over-budget first.
+    assert [row["account"] for row in data["accounts"]] == [
+        "Expenses:Food",
+        "Expenses:Others",
+        "Expenses:Books",
+    ]
+
+    assert data["total_budgeted"] == pytest.approx(
+        expected_budgeted + 50.0 + 105.0,
+    )
+    assert data["total_actual"] == 80.0
+
+    # A ledger with no `custom "budget"` directives returns an empty
+    # report for the (defaulted, current-month) period, not an error.
+    response = test_client.get("/long-example/api/budgets")
+    data = assert_api_success(response)
+    assert data["accounts"] == []
+    assert data["total_budgeted"] == 0
+    assert data["total_actual"] == 0
+
+
 def test_api_uncategorized_transaction(
     test_client: FlaskClient,
     app: Flask,

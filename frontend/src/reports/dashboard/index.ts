@@ -1,4 +1,5 @@
 import {
+  get_budgets,
   get_goals,
   get_holdings,
   get_insights,
@@ -6,6 +7,7 @@ import {
 } from "../../api/index.ts";
 import type {
   AllocationEntry,
+  BudgetReport,
   Commodities,
   GoalProgress,
   HoldingsReport,
@@ -35,6 +37,7 @@ export interface DashboardReportProps {
   allocation: AllocationEntry[];
   liquidCash: number;
   goals: GoalProgress[];
+  budgetReport: BudgetReport;
 }
 
 export const dashboard = new Route<DashboardReportProps>(
@@ -42,13 +45,14 @@ export const dashboard = new Route<DashboardReportProps>(
   Dashboard,
   async (url) => {
     const filters = getURLFilters(url);
-    const [hero, insights, uncategorized, holdingsReport, goals] =
+    const [hero, insights, uncategorized, holdingsReport, goals, budgetReport] =
       await Promise.all([
         load_net_worth_hero(filters),
         get_insights(filters),
         get_uncategorized_transaction(),
         get_holdings(filters),
         get_goals(),
+        get_budgets(filters),
       ]);
     return {
       ...hero,
@@ -56,6 +60,7 @@ export const dashboard = new Route<DashboardReportProps>(
       uncategorized,
       holdingsReport,
       goals,
+      budgetReport,
     };
   },
   () => _("Dashboard"),

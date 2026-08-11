@@ -79,5 +79,5 @@ test("validate journal", async () => {
   const res = array(entryValidator)(data);
   ok(res.is_ok);
   const entries = res.unwrap();
-  equal(entries.length, 26);
+  equal(entries.length, 29);
 });

@@ -54,6 +54,11 @@ class BudgetModule(FavaModule):
             self.ledger.all_entries_by_type.Custom,
         )
 
+    @property
+    def budgeted_accounts(self) -> Sequence[str]:
+        """Accounts that have at least one budget directive."""
+        return list(self._budget_entries.keys())
+
     def calculate(
         self,
         account: str,

@@ -2,9 +2,10 @@
 
 ## Status
 
-Phases 1–20 (Parts 1–3) done and pushed to `main`. The app now matches the design mockup and the
-shared visual language extends across every report. Part 4 (Goals and Budgets, Phases 21–22) is
-requested but not yet started — no mockup exists for either.
+All 22 phases (Parts 1–4) done and pushed to `main`. The app now matches the design mockup, the
+shared visual language extends across every report, and the personal-finance feature set is
+rounded out with Goals (savings/payoff progress with an ETA) and Budgets (cross-account
+budget-vs-actual for the current period).
 
 | Phase | Status |
 | --- | --- |
@@ -29,7 +30,7 @@ requested but not yet started — no mockup exists for either.
 | 19 — Forecast tiles redesign | ✅ Done |
 | 20 — Shared visual language on ledger reports | ✅ Done |
 | 21 — Goals | ✅ Done |
-| 22 — Budgets | ⏳ Pending |
+| 22 — Budgets | ✅ Done |
 
 ## Context
 
@@ -1125,6 +1126,44 @@ manual pass on the new page and the Overview card in both themes.
 ---
 
 ## Phase 22 — Budgets
+
+**Status: ✅ Done.** Endpoint ended up named `get_budgets()` (URL `/api/budgets`), not
+`get_budget_report()` as originally sketched - `@api_endpoint` derives the route from everything
+after the function's first underscore, so `get_budget_report` would have routed to
+`/api/budget_report`. Notable decisions/findings while implementing:
+- Rows are restricted to **top-level** budgeted accounts (no budgeted ancestor) - a budgeted
+  parent's `calculate_children` total already folds in any budgeted child's amount, so also
+  showing the child as its own row would double-count it. Not something the original plan text
+  called out explicitly; found while designing which accounts to list, verified with a 3-level
+  nested-budget fixture case (`Expenses:Others` budgeted, `Expenses:Others:Sub:Deep` also
+  budgeted - only `Expenses:Others` shows, with the nested amount correctly folded in).
+- "Actual spend" is computed directly from `slice_entry_dates` + posting summation (mirroring
+  the technique `ChartModule.interval_totals` already uses internally), not by reusing
+  `interval_totals` itself - that function iterates a *ledger's* interval boundaries, not one
+  arbitrary caller-specified range, so reusing it directly wasn't a fit.
+- Rows sort most-over-budget first (by `pct_used` descending, unconfigured/no-budget accounts
+  last) - a deliberate choice beyond what the plan specified, matching Insights' "surface what
+  needs attention first" philosophy.
+- Defaults to the **real current calendar month** (`local_today()`, the existing helper in
+  `util/date.py` - not `date.today()` directly, which trips a lint rule this codebase already has
+  an established suppression pattern for) when no `time` filter is set, deliberately different
+  from Goals' choice to anchor to the ledger's own last data point - a budget question is about
+  the real present, unlike a forecast extrapolation.
+- **Found and fixed a real, pre-existing CSS bug** while building the table: `.stat-positive`/
+  `.stat-negative` silently lose to `td.num`'s own `color` rule in `base.css` on specificity
+  (tag+class beats class-only) whenever both are applied to the same `<td>` - confirmed via
+  `getComputedStyle`, not just class-list inspection. Fixed locally in the new Budgets table by
+  moving the tone classes onto a nested `<span>` instead of the `<td>` itself. The exact same
+  broken pattern already existed in `HoldingsPreview.svelte`'s Day-change and P/L columns
+  (shipped in Phase 16) - flagged separately rather than fixed here, since it's pre-existing,
+  already-shipped code outside this phase's scope.
+- Test data: added `custom "budget"` directives to `tests/data/example.beancount` (`Expenses:Food`
+  monthly, `Expenses:Others` monthly, and a nested `Expenses:Others:Sub:Deep`) alongside the
+  pre-existing `Expenses:Books` one, to get real nonzero-actual-spend and nested-budget coverage
+  end-to-end - `Expenses:Food` already has real postings in that fixture, so no new transactions
+  were needed. This rippled into `test_core_charts.py`'s `interval_totals` snapshots (which fold
+  in `Expenses`' children budgets) and the journal snapshot/entry-count assertions, same pattern
+  as Phase 21's ripple into `long-example.beancount` - all updated alongside.
 
 **Goal:** a cross-account budget-vs-actual view for the current period — the thing
 `core/budgets.py` has always been able to compute but that nothing has ever asked it for at more

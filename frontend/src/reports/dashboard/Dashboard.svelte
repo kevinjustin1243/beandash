@@ -1,5 +1,6 @@
 <script lang="ts">
   import AllocationGrid from "./AllocationGrid.svelte";
+  import BudgetsSummary from "./BudgetsSummary.svelte";
   import ForecastTiles from "./ForecastTiles.svelte";
   import GoalsSummary from "./GoalsSummary.svelte";
   import HoldingsPreview from "./HoldingsPreview.svelte";
@@ -23,6 +24,7 @@
     allocation,
     liquidCash,
     goals,
+    budgetReport,
   }: DashboardReportProps = $props();
 </script>
 
@@ -51,6 +53,8 @@
   {/if}
 
   <GoalsSummary {goals} />
+
+  <BudgetsSummary report={budgetReport} />
 
   <HoldingsPreview {holdingsReport} {commodities} />
 

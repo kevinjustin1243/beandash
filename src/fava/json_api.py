@@ -27,7 +27,9 @@ from flask import jsonify
 from flask import request
 from flask_babel import gettext
 
+from fava.beans.account import parent as account_parent
 from fava.beans.funcs import hash_entry
+from fava.beans.helpers import slice_entry_dates
 from fava.context import g
 from fava.core import EntryNotFoundForHashError
 from fava.core.charts import DateAndBalance
@@ -42,6 +44,7 @@ from fava.core.forecast import fit_currencies
 from fava.core.forecast import forecast
 from fava.core.forecast import PROJECTED_SUFFIX
 from fava.core.forecast import years_to_target
+from fava.core.inventory import CounterInventory
 from fava.core.inventory import SimpleCounterInventory
 from fava.core.inventory import ZERO
 from fava.core.misc import align
@@ -53,6 +56,8 @@ from fava.internal_api import get_errors
 from fava.internal_api import get_ledger_data
 from fava.serialisation import deserialise
 from fava.serialisation import serialise
+from fava.util.date import DateRange
+from fava.util.date import local_today
 from fava.util.date import Month
 from fava.util.live_prices import fetch_quotes
 
@@ -73,7 +78,6 @@ if TYPE_CHECKING:  # pragma: no cover
     from fava.core.query import QueryResultText
     from fava.core.tree import SerialisedTreeNode
     from fava.internal_api import ChartData
-    from fava.util.date import DateRange
     from fava.util.live_prices import Quote
 
 
@@ -1075,6 +1079,124 @@ def get_goals() -> Sequence[GoalProgress]:
     g.ledger.changed()
     full = g.ledger.get_filtered()
     return [_goal_progress(full, goal) for goal in g.ledger.goals.goals]
+
+
+@dataclass(frozen=True)
+class BudgetAccountProgress:
+    """A budgeted account's spend against its budget for one period."""
+
+    account: str
+    budgeted: Decimal
+    actual: Decimal
+    remaining: Decimal
+    pct_used: float | None
+
+
+@dataclass(frozen=True)
+class BudgetReport:
+    """Budget-vs-actual for every top-level budgeted account, one period."""
+
+    date_range: DateRange
+    currency: str
+    accounts: Sequence[BudgetAccountProgress]
+    total_budgeted: Decimal
+    total_actual: Decimal
+
+
+def _top_level_budgeted_accounts(
+    accounts: Sequence[str],
+) -> list[str]:
+    """Budgeted accounts that have no budgeted ancestor.
+
+    A budgeted parent's `calculate_children` total already folds in any
+    budgeted child's amount, so also showing the child as its own row
+    would double-count it.
+    """
+    budgeted = set(accounts)
+    result = []
+    for account in accounts:
+        current = account_parent(account)
+        while current is not None and current not in budgeted:
+            current = account_parent(current)
+        if current is None:
+            result.append(account)
+    return result
+
+
+def _actual_spend(
+    filtered: FilteredLedger,
+    account: str,
+    date_range: DateRange,
+    currency: str,
+) -> Decimal:
+    """Sum of postings to `account` (or its children) within `date_range`."""
+    entries = slice_entry_dates(
+        filtered.entries, date_range.begin, date_range.end
+    )
+    inventory = CounterInventory()
+    for entry in entries:
+        for posting in getattr(entry, "postings", []):
+            if posting.account.startswith(account):
+                inventory.add_position(posting)
+    conversion = conversion_from_str(currency)
+    value = conversion.apply(
+        inventory, filtered.ledger.prices, date_range.end_inclusive
+    )
+    return value.get(currency, ZERO)
+
+
+@api_endpoint
+def get_budgets() -> BudgetReport:
+    """Get budget-vs-actual for every budgeted account, for one period.
+
+    Follows the `time` URL filter, like every other report - defaulting
+    to the current calendar month (not the ledger's own last transaction
+    date, unlike Goals - a budget question is about the real current
+    period, so this deliberately uses today's actual date).
+    """
+    g.ledger.changed()
+    currency = next(iter(g.ledger.options["operating_currency"]), "")
+
+    date_range = g.filtered.date_range
+    if date_range is None:
+        today = local_today()
+        date_range = DateRange(Month.get_prev(today), Month.get_next(today))
+
+    budgets_mod = g.ledger.budgets
+    accounts = _top_level_budgeted_accounts(
+        sorted(budgets_mod.budgeted_accounts),
+    )
+
+    rows = []
+    total_budgeted = ZERO
+    total_actual = ZERO
+    for account in accounts:
+        budgeted = budgets_mod.calculate_children(
+            account, date_range.begin, date_range.end
+        ).get(currency, ZERO)
+        actual = _actual_spend(g.filtered, account, date_range, currency)
+        pct_used = float(actual / budgeted) if budgeted else None
+        rows.append(
+            BudgetAccountProgress(
+                account=account,
+                budgeted=budgeted,
+                actual=actual,
+                remaining=budgeted - actual,
+                pct_used=pct_used,
+            ),
+        )
+        total_budgeted += budgeted
+        total_actual += actual
+
+    rows.sort(key=lambda row: (row.pct_used is None, -(row.pct_used or 0.0)))
+
+    return BudgetReport(
+        date_range=date_range,
+        currency=currency,
+        accounts=rows,
+        total_budgeted=total_budgeted,
+        total_actual=total_actual,
+    )
 
 
 @dataclass(frozen=True)

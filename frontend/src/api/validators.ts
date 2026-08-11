@@ -205,6 +205,28 @@ export const goal_progress_validator = object({
 
 export type GoalProgress = ValidationT<typeof goal_progress_validator>;
 
+export const budget_account_progress_validator = object({
+  account: string,
+  budgeted: number,
+  actual: number,
+  remaining: number,
+  pct_used: optional(number),
+});
+
+export type BudgetAccountProgress = ValidationT<
+  typeof budget_account_progress_validator
+>;
+
+export const budget_report_validator = object({
+  date_range,
+  currency: string,
+  accounts: array(budget_account_progress_validator),
+  total_budgeted: number,
+  total_actual: number,
+});
+
+export type BudgetReport = ValidationT<typeof budget_report_validator>;
+
 export const uncategorized_transaction_validator = optional(
   object({
     entry: entryValidator,

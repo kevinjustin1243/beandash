@@ -72,6 +72,7 @@ setup_logging()
 
 CLIENT_SIDE_REPORTS = [
     "balance_sheet",
+    "budgets",
     "dashboard",
     "errors",
     "goals",
