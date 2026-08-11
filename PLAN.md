@@ -24,7 +24,7 @@ the app precisely to the design mockup and is not yet started.
 | 15 — Allocation tile grid | ✅ Done |
 | 16 — Holdings table redesign | ✅ Done |
 | 17 — Insights redesign | ✅ Done |
-| 18 — Suggester redesign | ⏳ Pending |
+| 18 — Suggester redesign | ✅ Done |
 | 19 — Forecast tiles redesign | ⏳ Pending |
 | 20 — Shared visual language on ledger reports | ⏳ Pending |
 
@@ -911,6 +911,11 @@ assertions for the new field shape, same fixture patterns), snapshot/assertion u
 ---
 
 ## Phase 18 — Suggester redesign
+
+**Status: ✅ Done** (found a pre-existing gap in `suggest_accounts()` while testing: it doesn't
+exclude the placeholder account itself from candidates, so with too little training signal it can
+suggest putting the transaction right back where it started. Not fixed here — out of scope for a
+redesign-only phase — flagged separately.)
 
 **Goal:** add the mockup's prominent "Accept top match" CTA button alongside the existing (and
 better-UX) per-row-clickable suggestions, and restyle rows as confidence-tiered pill chips.
